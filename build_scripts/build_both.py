@@ -11,13 +11,13 @@ from pathlib import Path
 
 def run_command(cmd, description):
     """Run a command with error handling."""
-    print(f"🔨 {description}...")
+    print(f"{description}...")
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print(f"✅ {description} completed successfully")
+        print(f"{description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ {description} failed:")
+        print(f"{description} failed:")
         print(f"   Command: {' '.join(cmd)}")
         print(f"   Error: {e.stderr}")
         return False
@@ -28,17 +28,17 @@ def clean_build_directories():
     for dir_name in dirs_to_clean:
         dir_path = Path(dir_name)
         if dir_path.exists():
-            print(f"🧹 Cleaning {dir_name} directory...")
+            print(f"Cleaning {dir_name} directory...")
             shutil.rmtree(dir_path)
 
 def install_pyinstaller():
     """Install PyInstaller if not available."""
     try:
         import PyInstaller
-        print("✅ PyInstaller already installed")
+        print("PyInstaller already installed")
         return True
     except ImportError:
-        print("📦 PyInstaller not found, installing...")
+        print("PyInstaller not found, installing...")
         return run_command([sys.executable, "-m", "pip", "install", "PyInstaller"], 
                           "Installing PyInstaller")
 
@@ -72,19 +72,19 @@ def get_file_sizes():
 
 def main():
     """Main build process."""
-    print("🔨 Building X4 ShipMatrix with Optional Updater")
+    print("Building X4 ShipMatrix with Optional Updater")
     print("=" * 50)
     
     # Change to build_scripts directory
     script_dir = Path(__file__).parent
     original_dir = os.getcwd()
     os.chdir(script_dir)
-    print(f"📁 Working directory: {script_dir}")
+    print(f"Working directory: {script_dir}")
     
     try:
         # Check prerequisites
         if not install_pyinstaller():
-            print("❌ Build failed: Could not install PyInstaller")
+            print("Build failed: Could not install PyInstaller")
             return 1
         
         # Clean previous builds
@@ -92,32 +92,32 @@ def main():
         
         # Build main executable
         if not build_main_executable():
-            print("❌ Build failed: Main executable build failed")
+            print("Build failed: Main executable build failed")
             return 1
         
         # Build updater executable (continue even if this fails)
-        print("\n📡 Building optional updater executable...")
+        print("\nBuilding optional updater executable...")
         updater_success = build_updater_executable()
         if not updater_success:
-            print("⚠️ Updater build failed - continuing without updater")
+            print("Updater build failed - continuing without updater")
         
         # Show results
         sizes = get_file_sizes()
-        print("\n🎉 Build Results:")
+        print("\nBuild Results:")
         print("-" * 30)
         for filename, size in sizes.items():
-            print(f"📦 {filename}: {size}")
+            print(f"{filename}: {size}")
         
-        print(f"\n✅ Build completed!")
-        print(f"📁 Files available in: {Path('dist').absolute()}")
+        print(f"\nBuild completed!")
+        print(f"Files available in: {Path('dist').absolute()}")
         
         if "X4_Updater.exe" in sizes:
-            print("\n💡 Update Options:")
+            print("\nUpdate Options:")
             print("   • Distribute both executables for automatic update checking")
             print("   • Distribute only 'X4 ShipMatrix.exe' for manual updates")
             print("   • Users can check updates via Help → Check for Updates")
         else:
-            print("\n💡 Update Method:")
+            print("\nUpdate Method:")
             print("   • Manual updates only (Help → Check for Updates opens GitHub)")
             print("   • Users download new versions from GitHub releases")
         

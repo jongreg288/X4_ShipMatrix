@@ -60,12 +60,12 @@ def load_text_mappings():
     if not text_file:
         fallback_file = find_data_path("t/0001-l044.xml")
         if fallback_file:
-            print(f"⚠️ {lang_name} text file not found")
-            print(f"🔄 Using English fallback: {fallback_file}")
+            print(f"{lang_name} text file not found")
+            print(f"Using English fallback: {fallback_file}")
             text_file = fallback_file
             lang_name = "English (fallback)"
         else:
-            print(f"❌ No text files found - neither {text_file} nor English fallback")
+            print(f"No text files found - neither {text_file} nor English fallback")
             return
     
     try:
@@ -74,11 +74,11 @@ def load_text_mappings():
         
         # Verify this is a valid language file
         if root.tag != "language":
-            print(f"⚠️ Invalid language file format: {text_file}")
+            print(f"Invalid language file format: {text_file}")
             return
             
         file_lang_id = root.get("id")
-        print(f"🌍 Loading {lang_name} text mappings from {text_file.name} (Language ID: {file_lang_id})")
+        print(f"Loading {lang_name} text mappings from {text_file.name} (Language ID: {file_lang_id})")
         
         # Parse all pages and text entries
         for page in root.findall(".//page"):
@@ -94,10 +94,10 @@ def load_text_mappings():
                         TEXT_MAPPINGS[key] = clean_value
         
         CURRENT_LANGUAGE_FILE = lang_file
-        print(f"✅ Loaded {len(TEXT_MAPPINGS)} text mappings from {lang_name} localization file")
+        print(f"Loaded {len(TEXT_MAPPINGS)} text mappings from {lang_name} localization file")
         
     except ET.ParseError as e:
-        print(f"❌ Failed to parse text file {text_file}: {e}")
+        print(f"Failed to parse text file {text_file}: {e}")
 
 def resolve_text_reference_advanced(text_ref):
     """Resolve a text reference using loaded mappings."""
@@ -278,7 +278,7 @@ def parse_storage_macro(storage_file: Path):
             cargo_tags = cargo_el.get("tags", "")
             return cargo_max, cargo_tags
     except ET.ParseError:
-        print(f"⚠️ Failed to parse storage file {storage_file}")
+        print(f"Failed to parse storage file {storage_file}")
     
     return 0, None
 
@@ -302,7 +302,7 @@ def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
                 tree = ET.parse(xml_file)
                 root = tree.getroot()
             except ET.ParseError:
-                print(f"⚠️ Failed to parse {xml_file}")
+                print(f"Failed to parse {xml_file}")
                 continue
 
             # Find the first <macro> element
@@ -320,7 +320,7 @@ def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
 
             props = macro_el.find("properties")
             if props is None:
-                print(f"⚠️ No <properties> found in {xml_file.name}")
+                print(f"No <properties> found in {xml_file.name}")
                 continue
 
             # Identification block
@@ -388,7 +388,7 @@ def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
                         ]
                         engine_connections = len(engine_conns)
                     except ET.ParseError:
-                        print(f"⚠️ Failed to parse component file {component_file}")
+                        print(f"Failed to parse component file {component_file}")
                         engine_connections = 1  # Default fallback
                 else:
                     engine_connections = 1  # Default fallback when no component file found
@@ -433,7 +433,7 @@ def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
                                 elif "size_xl" in str(xml_file):
                                     shield_size_class = "xl"
                     except ET.ParseError:
-                        print(f"⚠️ Failed to parse component file {component_file} for shield data")
+                        print(f"Failed to parse component file {component_file} for shield data")
                         shield_connections = 0
                         shield_size_class = None
 
@@ -523,12 +523,12 @@ def load_engine_data(engine_dir=None):
     if engine_dir is None:
         engine_macro_dirs = get_all_data_paths("assets/props/Engines/macros")
         if not engine_macro_dirs:
-            print(f"⚠️ No engine macro folders found in any data location")
+            print(f"No engine macro folders found in any data location")
             return pd.DataFrame()
     else:
         engine_dir = Path(engine_dir)
         if not engine_dir.exists():
-            print(f"⚠️ Engine folder not found: {engine_dir}")
+            print(f"Engine folder not found: {engine_dir}")
             return pd.DataFrame()
         engine_macro_dirs = [engine_dir]
 
@@ -536,13 +536,13 @@ def load_engine_data(engine_dir=None):
 
     # Process all engine macro directories
     for engine_macro_dir in engine_macro_dirs:
-        print(f"🔍 Loading engines from: {engine_macro_dir}")
+        print(f"Loading engines from: {engine_macro_dir}")
         for xml_file in engine_macro_dir.glob("*.xml"):
             try:
                 tree = ET.parse(xml_file)
                 root = tree.getroot()
             except ET.ParseError:
-                print(f"⚠️ Failed to parse {xml_file}")
+                print(f"Failed to parse {xml_file}")
                 continue
 
             for macro in root.findall(".//macro[@class='engine']"):
@@ -638,7 +638,7 @@ def parse_shields():
     # Find all shield macro files from all directories
     shield_files = []
     for shield_dir in shield_dirs:
-        print(f"🔍 Loading shields from: {shield_dir}")
+        print(f"Loading shields from: {shield_dir}")
         shield_files.extend(list(shield_dir.glob("shield_*.xml")))
     
     for shield_file in shield_files:
@@ -747,15 +747,15 @@ def load_weapons_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
         csv_path = Path("data/csv_cache/weapons.csv")
     
     if not csv_path.exists():
-        print(f"⚠️ Weapons CSV not found at {csv_path}")
+        print(f"Weapons CSV not found at {csv_path}")
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
-        print(f"✅ Loaded {len(df)} weapons from CSV")
+        print(f"Loaded {len(df)} weapons from CSV")
         return df
     except Exception as e:
-        print(f"❌ Error loading weapons CSV: {e}")
+        print(f"Error loading weapons CSV: {e}")
         return pd.DataFrame()
 
 
@@ -765,15 +765,15 @@ def load_turrets_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
         csv_path = Path("data/csv_cache/turrets.csv")
     
     if not csv_path.exists():
-        print(f"⚠️ Turrets CSV not found at {csv_path}")
+        print(f"Turrets CSV not found at {csv_path}")
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
-        print(f"✅ Loaded {len(df)} turrets from CSV")
+        print(f"Loaded {len(df)} turrets from CSV")
         return df
     except Exception as e:
-        print(f"❌ Error loading turrets CSV: {e}")
+        print(f"Error loading turrets CSV: {e}")
         return pd.DataFrame()
 
 
@@ -783,15 +783,15 @@ def load_ships_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
         csv_path = Path("data/csv_cache/ships.csv")
     
     if not csv_path.exists():
-        print(f"⚠️ Ships CSV not found at {csv_path}")
+        print(f"Ships CSV not found at {csv_path}")
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
-        print(f"✅ Loaded {len(df)} ships from CSV")
+        print(f"Loaded {len(df)} ships from CSV")
         return df
     except Exception as e:
-        print(f"❌ Error loading ships CSV: {e}")
+        print(f"Error loading ships CSV: {e}")
         return pd.DataFrame()
 
 
@@ -801,15 +801,15 @@ def load_engines_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
         csv_path = Path("data/csv_cache/engines.csv")
     
     if not csv_path.exists():
-        print(f"⚠️ Engines CSV not found at {csv_path}")
+        print(f"Engines CSV not found at {csv_path}")
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
-        print(f"✅ Loaded {len(df)} engines from CSV")
+        print(f"Loaded {len(df)} engines from CSV")
         return df
     except Exception as e:
-        print(f"❌ Error loading engines CSV: {e}")
+        print(f"Error loading engines CSV: {e}")
         return pd.DataFrame()
 
 
@@ -819,16 +819,65 @@ def load_shields_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
         csv_path = Path("data/csv_cache/shields.csv")
     
     if not csv_path.exists():
-        print(f"⚠️ Shields CSV not found at {csv_path}")
+        print(f"Shields CSV not found at {csv_path}")
         return pd.DataFrame()
     
     try:
         df = pd.read_csv(csv_path)
-        print(f"✅ Loaded {len(df)} shields from CSV")
+        print(f"Loaded {len(df)} shields from CSV")
         return df
     except Exception as e:
-        print(f"❌ Error loading shields CSV: {e}")
+        print(f"Error loading shields CSV: {e}")
         return pd.DataFrame()
+
+
+def check_csv_freshness():
+    """Check if CSV files exist and are up to date with XML files.
+    Returns: (bool: csvs_exist, bool: csvs_fresh, str: message)
+    """
+    csv_dir = Path("data/csv_cache")
+    csv_files = ["ships.csv", "engines.csv", "shields.csv", "weapons.csv", "turrets.csv"]
+    
+    # Check if all CSV files exist
+    missing_files = []
+    for csv_file in csv_files:
+        csv_path = csv_dir / csv_file
+        if not csv_path.exists():
+            missing_files.append(csv_file)
+    
+    if missing_files:
+        return False, False, f"Missing CSV files: {', '.join(missing_files)}"
+    
+    # Find oldest CSV file timestamp
+    oldest_csv_time = None
+    for csv_file in csv_files:
+        csv_path = csv_dir / csv_file
+        if csv_path.exists():
+            mtime = csv_path.stat().st_mtime
+            if oldest_csv_time is None or mtime < oldest_csv_time:
+                oldest_csv_time = mtime
+    
+    # Check if any XML files are newer than CSVs
+    xml_paths = [
+        "assets/units",
+        "assets/props/Engines/macros",
+        "assets/props/SurfaceElements/macros",
+        "assets/props/WeaponSystems"
+    ]
+    
+    newest_xml_time = None
+    for rel_path in xml_paths:
+        for data_path in get_all_data_paths(rel_path):
+            if data_path.exists():
+                for xml_file in data_path.rglob("*.xml"):
+                    mtime = xml_file.stat().st_mtime
+                    if newest_xml_time is None or mtime > newest_xml_time:
+                        newest_xml_time = mtime
+    
+    if newest_xml_time and oldest_csv_time and newest_xml_time > oldest_csv_time:
+        return True, False, "CSV files are outdated (XML files have been modified)"
+    
+    return True, True, "CSV files are up to date"
 
 
 def generate_all_csv_files():
@@ -843,35 +892,35 @@ def generate_all_csv_files():
     csv_dir.mkdir(exist_ok=True)
     
     # Generate ships CSV
-    print("📊 Generating ships.csv...")
+    print("Generating ships.csv...")
     engines_df = load_engine_data()  # Load engines first for ship processing
     ships_df = load_ship_data(engines_df)
     if not ships_df.empty:
         ships_csv = csv_dir / "ships.csv"
         ships_df.to_csv(ships_csv, index=False)
-        print(f"✅ Saved {len(ships_df)} ships to {ships_csv}")
+        print(f"Saved {len(ships_df)} ships to {ships_csv}")
     
     # Generate engines CSV  
-    print("📊 Generating engines.csv...")
+    print("Generating engines.csv...")
     if not engines_df.empty:
         engines_csv = csv_dir / "engines.csv"
         engines_df.to_csv(engines_csv, index=False)
-        print(f"✅ Saved {len(engines_df)} engines to {engines_csv}")
+        print(f"Saved {len(engines_df)} engines to {engines_csv}")
     
     # Generate shields CSV
-    print("📊 Generating shields.csv...")
+    print("Generating shields.csv...")
     shields_df = parse_shields()
     if not shields_df.empty:
         shields_csv = csv_dir / "shields.csv"
         shields_df.to_csv(shields_csv, index=False)
-        print(f"✅ Saved {len(shields_df)} shields to {shields_csv}")
+        print(f"Saved {len(shields_df)} shields to {shields_csv}")
     
     # Generate weapons and turrets CSV using the dedicated generator
-    print("📊 Generating weapons.csv and turrets.csv...")
+    print("Generating weapons.csv and turrets.csv...")
     try:
         from .csv_generator import WeaponCSVGenerator
     except ImportError:
-        print("⚠️ csv_generator module not found, skipping weapons/turrets CSV generation")
+        print("csv_generator module not found, skipping weapons/turrets CSV generation")
         return {
             "ships": len(ships_df) if not ships_df.empty else 0,
             "engines": len(engines_df) if not engines_df.empty else 0,
@@ -890,7 +939,7 @@ def generate_all_csv_files():
     generator.generate_turret_csv(turrets_csv)
     
     print("=== CSV Generation Complete ===")
-    print(f"📁 All CSV files saved to: {csv_dir}")
+    print(f"All CSV files saved to: {csv_dir}")
     
     return {
         "ships": len(ships_df) if not ships_df.empty else 0,

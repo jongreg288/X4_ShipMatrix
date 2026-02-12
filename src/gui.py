@@ -74,7 +74,7 @@ class ShipStatsApp(QMainWindow):
         self.liquid_tab = self.create_ship_tab("liquid", "Liquid Cargo Ships")
         
         # Add tabs to tab widget
-        self.tab_widget.addTab(self.comparison_tab, "Comparison")
+        self.tab_widget.addTab(self.comparison_tab, "Combat Ship Builder")
         self.tab_widget.addTab(self.container_tab, "Container")
         self.tab_widget.addTab(self.solid_tab, "Solid")
         self.tab_widget.addTab(self.liquid_tab, "Liquid")
@@ -84,7 +84,7 @@ class ShipStatsApp(QMainWindow):
         central_widget.setLayout(main_layout)
     
     def create_menu_bar(self):
-        """Create the menu bar with Settings and Help menus."""
+        """Create the menu bar with Settings, Tools, and Help menus."""
         menubar = self.menuBar()
         if not menubar:
             return
@@ -96,6 +96,19 @@ class ShipStatsApp(QMainWindow):
             language_action = settings_menu.addAction('Language...')
             if language_action:
                 language_action.triggered.connect(self.show_language_dialog)
+        
+        # Tools menu
+        tools_menu = menubar.addMenu('Tools')
+        if tools_menu:
+            # Rebuild Data Cache action
+            rebuild_action = tools_menu.addAction('Rebuild Data Cache...')
+            if rebuild_action:
+                rebuild_action.triggered.connect(self.rebuild_data_cache)
+            
+            # Check Cache Status action
+            check_cache_action = tools_menu.addAction('Check Cache Status...')
+            if check_cache_action:
+                check_cache_action.triggered.connect(self.check_cache_status)
         
         # Help menu
         help_menu = menubar.addMenu('Help')
@@ -133,6 +146,7 @@ class ShipStatsApp(QMainWindow):
                                creationflags=subprocess.CREATE_NO_WINDOW)
             except Exception:
                 pass  # Silent failure - don't interrupt user experience
+
     def check_for_updates_manual(self):
         """Check for updates with user feedback."""
         # Launch external updater if available, otherwise show manual instructions
@@ -184,6 +198,90 @@ class ShipStatsApp(QMainWindow):
                                f"Loaded {lang_info['mapping_count']} text mappings\n\n"
                                "Note: You may need to restart the application to see "
                                "all ship names in the new language.")
+    
+    def check_cache_status(self):
+        """Check and display CSV cache status."""
+        try:
+            from src.data_parser import check_csv_freshness
+            csvs_exist, csvs_fresh, message = check_csv_freshness()
+            
+            if csvs_exist and csvs_fresh:
+                status_icon = QMessageBox.Icon.Information
+                status_title = "Cache Status: OK"
+                status_msg = "CSV data cache is up to date.\n\n" + message
+            elif csvs_exist and not csvs_fresh:
+                status_icon = QMessageBox.Icon.Warning
+                status_title = "Cache Status: Outdated"
+                status_msg = ("CSV data cache is outdated.\n\n" + message + 
+                            "\n\nRecommendation: Use 'Tools → Rebuild Data Cache' to update.")
+            else:
+                status_icon = QMessageBox.Icon.Critical
+                status_title = "Cache Status: Missing"
+                status_msg = "CSV data cache is missing or incomplete.\n\n" + message
+            
+            msg_box = QMessageBox(self)
+            msg_box.setIcon(status_icon)
+            msg_box.setWindowTitle(status_title)
+            msg_box.setText(status_msg)
+            msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msg_box.exec()
+            
+        except Exception as e:
+            QMessageBox.warning(self, "Cache Status Error", 
+                              f"Could not check cache status:\n{str(e)}")
+    
+    def rebuild_data_cache(self):
+        """Rebuild CSV data cache from XML files."""
+        # Confirm action
+        reply = QMessageBox.question(
+            self, 
+            'Rebuild Data Cache',
+            'This will regenerate all CSV data files from X4 game data.\n\n'
+            'This process may take 10-30 seconds.\n\n'
+            'You will need to restart the application after rebuilding.\n\n'
+            'Continue?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        
+        try:
+            # Show progress dialog
+            from src.loading_dialog import show_loading_dialog, update_loading_status, close_loading_dialog
+            loading_dialog = show_loading_dialog()
+            update_loading_status("Rebuilding data cache from XML files...")
+            
+            # Import here to avoid circular imports
+            from src.data_parser import generate_all_csv_files
+            
+            # Generate all CSV files
+            result = generate_all_csv_files()
+            
+            close_loading_dialog()
+            
+            # Show success message
+            success_msg = (
+                f"Data cache rebuilt successfully!\n\n"
+                f"Ships: {result.get('ships', 0)}\n"
+                f"Engines: {result.get('engines', 0)}\n"
+                f"Shields: {result.get('shields', 0)}\n"
+                f"Weapons: {result.get('weapons', 0)}\n"
+                f"Turrets: {result.get('turrets', 0)}\n\n"
+                f"Please restart X4 ShipMatrix to load the updated data."
+            )
+            
+            QMessageBox.information(self, "Rebuild Complete", success_msg)
+            
+        except Exception as e:
+            try:
+                close_loading_dialog()
+            except:
+                pass
+            QMessageBox.critical(self, "Rebuild Failed", 
+                               f"Failed to rebuild data cache:\n\n{str(e)}")
+    
     
     def show_about(self):
         """Show about dialog."""
@@ -715,18 +813,44 @@ class ShipStatsApp(QMainWindow):
         ship_group = QGroupBox("Ship Selection")
         ship_layout = QFormLayout()
         
+        # Size Filter
+        size_filter = QComboBox()
+        size_filter.addItems(["All Sizes", "S", "M", "L", "XL"])
+        ship_layout.addRow("Size:", size_filter)
+        
+        # Type Filter  
+        type_filter = QComboBox()
+        ship_types = ["All Types"] + sorted(self.ships_df['ship_type'].dropna().unique())
+        type_filter.addItems(ship_types)
+        ship_layout.addRow("Type:", type_filter)
+        
         # Ship dropdown (all ships, no restrictions)
         ship_dropdown = QComboBox()
         ship_items = ["None"]
         ship_name_mapping = {}
         
-        # Add ALL ships regardless of type
+        # Add ALL ships regardless of type, but exclude Khaak (player cannot use)
         for _, row in self.ships_df.iterrows():
             display_name = row.get('display_name', '')
             macro_name = row.get('macro_name', 'Unknown')
             name_ref = row.get('name_ref', '')
+            maker_race = str(row.get('maker_race', '')).lower()
             
-            if display_name and display_name != macro_name and not display_name.startswith("Text Ref:"):
+            # Skip Khaak ships (players cannot pilot, own, or capture them)
+            if 'khaak' in macro_name.lower() or 'khaak' in maker_race:
+                continue
+            
+            # Validate if display_name is usable (not a macro name, text ID, or empty)
+            is_usable_name = (
+                display_name and 
+                display_name != macro_name and 
+                not display_name.startswith('(') and
+                not display_name.startswith('Text Ref:') and
+                '_macro' not in display_name.lower() and
+                not re.match(r'^[\d,\s]+$', display_name)  # Not just numbers and commas
+            )
+            
+            if is_usable_name:
                 clean_name = display_name
             elif name_ref:
                 clean_name = f"Text Ref: {name_ref}"
@@ -738,18 +862,6 @@ class ShipStatsApp(QMainWindow):
         
         ship_dropdown.addItems(ship_items)
         ship_layout.addRow("Ship:", ship_dropdown)
-        
-        # Size Filter
-        size_filter = QComboBox()
-        size_filter.addItems(["All Sizes", "S", "M", "L", "XL"])
-        ship_layout.addRow("Size Filter:", size_filter)
-        
-        # Type Filter  
-        type_filter = QComboBox()
-        ship_types = ["All Types"] + sorted(self.ships_df['ship_type'].dropna().unique())
-        type_filter.addItems(ship_types)
-        ship_layout.addRow("Type Filter:", type_filter)
-        
         ship_group.setLayout(ship_layout)
         scroll_layout.addWidget(ship_group)
         
@@ -1068,11 +1180,11 @@ class ShipStatsApp(QMainWindow):
         canvas.setMinimumHeight(300)
         return canvas
     # TODO:
-        # "Fighters" tab - COMPLETED: shields dropdown ✅
+        # "Fighters" tab - COMPLETED: shields dropdown
         # REMAINING: weapons, thrusters dropdowns needed.
             # Shield files are shown as {shield} {faction} {size} {"standard"} {type} {variant}
                 # Internal <macro name="shield_arg_m_standard_02_mk2_macro" class="shieldgenerator">
-                # e.g. name="shield_arg_m_standard_02_mk2_macro" = "ARG M Standard 02 Mk2" ✅ IMPLEMENTED
+                # e.g. name="shield_arg_m_standard_02_mk2_macro" = "ARG M Standard 02 Mk2" IMPLEMENTED
             # Weapon files are shown as {weapon} {faction} {size} {type_01} {type_02} {variant}
                 # Internal <macro name="turret_arg_m_plasma_01_mk1_macro" class="turret" alias="turret_arg_m_plasma_02_mk1_macro">
                     # If alias is present, use that for stats lookup and display
@@ -1246,6 +1358,20 @@ class ShipStatsApp(QMainWindow):
         ship_dropdown = tab_data['ship_dropdown']
         engine_dropdown = tab_data['engine_dropdown']
         
+        # Add Top 5 Ships section at the top
+        self.add_top5_ships_section(layout, tab_data)
+        
+        # Add separator
+        separator = QLabel()
+        separator.setFixedHeight(2)
+        separator.setStyleSheet("background-color: #666666;")
+        layout.addWidget(separator)
+        
+        # Add manual selection label
+        manual_label = QLabel("<b>Manual Selection (Optional)</b>")
+        manual_label.setStyleSheet("margin-top: 10px; color: #777777;")
+        layout.addWidget(manual_label)
+        
         # Only add chart functionality if matplotlib is available
         if MATPLOTLIB_AVAILABLE:
             # Connect signals for chart updates
@@ -1282,6 +1408,122 @@ class ShipStatsApp(QMainWindow):
             tab_data['chart_canvas'] = chart_placeholder
         
         tab_data['chart_type'] = 'cargo'
+    
+    def add_top5_ships_section(self, layout, tab_data):
+        """Add a section showing the top 5 ships automatically for cargo tabs."""
+        from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+        from PyQt6.QtCore import Qt
+        
+        filtered_ships = tab_data['filtered_ships']
+        cargo_filter = tab_data['cargo_filter']
+        
+        # Create header
+        header_label = QLabel(f"<b>Top 5 {cargo_filter.capitalize()} Ships by Cargo Capacity</b>")
+        header_label.setStyleSheet("font-size: 14px; margin-bottom: 10px;")
+        layout.addWidget(header_label)
+        
+        # Calculate best ships based on cargo capacity
+        ship_rankings = []
+        for _, row in filtered_ships.iterrows():
+            storage_cargo_max = row.get('storage_cargo_max', 0)
+            if storage_cargo_max > 0:
+                display_name = row.get('display_name', row.get('macro_name', 'Unknown'))
+                macro_name = row.get('macro_name', 'Unknown')
+                hull_max = row.get('hull_max', 0)
+                mass = row.get('mass', 0)
+                engine_connections = row.get('engine_connections', 0)
+                
+                # Use display name if valid
+                if display_name and display_name != macro_name and not display_name.startswith("Text Ref:"):
+                    label = display_name
+                else:
+                    label = macro_name
+                
+                ship_rankings.append({
+                    'name': label,
+                    'macro_name': macro_name,
+                    'cargo': storage_cargo_max,
+                    'hull': hull_max,
+                    'mass': mass,
+                    'engines': engine_connections
+                })
+        
+        # Sort by cargo capacity (descending) and take top 5
+        ship_rankings.sort(key=lambda x: x['cargo'], reverse=True)
+        top5 = ship_rankings[:5]
+        
+        if not top5:
+            no_ships_label = QLabel("No ships found for this category.")
+            layout.addWidget(no_ships_label)
+            return
+        
+        # Create table to display top 5
+        table = QTableWidget()
+        table.setRowCount(len(top5))
+        table.setColumnCount(5)
+        table.setHorizontalHeaderLabels(["Rank", "Ship Name", "Cargo Capacity", "Hull", "Mass"])
+        table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        table.setMaximumHeight(200)
+        
+        # Populate table
+        for rank, ship in enumerate(top5, 1):
+            # Rank
+            rank_item = QTableWidgetItem(str(rank))
+            rank_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setItem(rank - 1, 0, rank_item)
+            
+            # Ship name
+            name_item = QTableWidgetItem(ship['name'][:50] + '...' if len(ship['name']) > 50 else ship['name'])
+            table.setItem(rank - 1, 1, name_item)
+            
+            # Cargo
+            cargo_item = QTableWidgetItem(f"{ship['cargo']:,}")
+            cargo_item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
+            table.setItem(rank - 1, 2, cargo_item)
+            
+            # Hull
+            hull_item = QTableWidgetItem(f"{ship['hull']:,.0f}")
+            hull_item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
+            table.setItem(rank - 1, 3, hull_item)
+            
+            # Mass
+            mass_item = QTableWidgetItem(f"{ship['mass']:,.0f}")
+            mass_item.setTextAlignment(Qt.AlignmentFlag.AlignRight)
+            table.setItem(rank - 1, 4, mass_item)
+        
+        # Auto-resize columns
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        
+        # Connect table selection to dropdown
+        def on_table_selection():
+            selected_rows = table.selectedIndexes()
+            if selected_rows:
+                row = selected_rows[0].row()
+                ship_name = top5[row]['name']
+                # Find and select this ship in the dropdown
+                ship_dropdown = tab_data['ship_dropdown']
+                index = ship_dropdown.findText(ship_name)
+                if index >= 0:
+                    ship_dropdown.setCurrentIndex(index)
+        
+        table.itemSelectionChanged.connect(on_table_selection)
+        
+        layout.addWidget(table)
+        
+        # Store table in tab_data
+        tab_data['top5_table'] = table
+        tab_data['top5_ships'] = top5
+        
+        # Add helpful note
+        note_label = QLabel("<i>Click a ship above to auto-select it, or use the dropdowns below for manual selection.</i>")
+        note_label.setStyleSheet("color: #555555; margin-top: 5px; margin-bottom: 10px;")
+        layout.addWidget(note_label)
     
     def update_comparison_chart(self, tab_data):
         """Update the comparison chart with top 5 ships of same size using same engine."""
@@ -1747,7 +1989,7 @@ class ShipStatsApp(QMainWindow):
                 shield_text = f"<b>Shield Analysis for {ship_size.upper()}-size Fighter:</b><br><br>"
                 
                 # Shield hardpoint information
-                shield_text += f"<b>🔌 Shield Hardpoints:</b><br>"
+                shield_text += f"<b>Shield Hardpoints:</b><br>"
                 if shield_connections > 0:
                     shield_text += f"• <span style='color: #28a745; font-weight: bold;'>{shield_connections}</span> shield hardpoint{'s' if shield_connections != 1 else ''}<br>"
                     if shield_size_class:
@@ -1765,7 +2007,7 @@ class ShipStatsApp(QMainWindow):
                 shield_text += f"<br>"
                                                 
                 # Faction recommendations
-                shield_text += f"<b>🏭 Faction Recommendations:</b><br>"
+                shield_text += f"<b>Faction Recommendations:</b><br>"
                 if maker_race in ['arg', 'argon']:
                     shield_text += f"• <span style='color: #0066cc;'>Argon</span>: Balanced capacity and recharge rates<br>"
                     shield_text += f"• <span style='color: #009900;'>Teladi</span>: High capacity, slower recharge<br>"
@@ -1798,7 +2040,7 @@ class ShipStatsApp(QMainWindow):
                 shield_text += f"<br>"
                 
                 # Tactical loadout recommendations based on hull strength
-                shield_text += f"<b>⚔️ Tactical Loadout Recommendations:</b><br>"
+                shield_text += f"<b>Tactical Loadout Recommendations:</b><br>"
                 if isinstance(hull_max, (int, float)) and hull_max > 0:
                     if ship_size == 'xl':  # Capital Class
                         shield_text += f"• <span style='color: #474747;'>XL Shields do not have a recharge delay.</span><br>"
@@ -1825,7 +2067,7 @@ class ShipStatsApp(QMainWindow):
                 shield_text += f"<br>"
                                 
                 # Advanced shield metrics
-                shield_text += f"<b>📈 Shield Performance Metrics:</b><br>"
+                shield_text += f"<b>Shield Performance Metrics:</b><br>"
                 shield_text += f"• <i>Capacity Rating</i>: Total shield amount<br>"
                 shield_text += f"• <i>Recharge Rate</i>: Recovery speed between hits<br>"
                 shield_text += f"• <i>Delay Time</i>: Time before recharge begins<br>"
@@ -2306,7 +2548,7 @@ class ShipStatsApp(QMainWindow):
                     <tr><td style='padding: 3px 10px; color: #BBB;'>Total Hardpoints:</td><td style='padding: 3px 10px;'>{combat_stats['weapon_count'] + combat_stats['turret_count']}</td></tr>
                 </table>
                 <p style='color: #FFC107; font-size: 11px; margin-top: 10px;'>
-                    ⚠️ Detailed DPS calculations require enhanced weapon data
+                    Warning: Detailed DPS calculations require enhanced weapon data
                 </p>
             """
             
@@ -2381,6 +2623,7 @@ class ShipStatsApp(QMainWindow):
     def filter_ships_by_size(self):
         """Filter ship dropdown based on selected size."""
         size_filter = self.comparison_size_filter.currentText()
+        self.update_type_filter_by_size()
         self.apply_ship_filters()
     
     def filter_ships_by_type(self):
@@ -2388,13 +2631,50 @@ class ShipStatsApp(QMainWindow):
         type_filter = self.comparison_type_filter.currentText()
         self.apply_ship_filters()
     
+    def update_type_filter_by_size(self):
+        """Update the type filter dropdown based on the selected size."""
+        size_filter = self.comparison_size_filter.currentText()
+        
+        # Block signals to prevent triggering filter during update
+        self.comparison_type_filter.blockSignals(True)
+        current_type = self.comparison_type_filter.currentText()
+        self.comparison_type_filter.clear()
+        
+        # Start with non-Khaak ships
+        filtered_ships = self.ships_df[
+            ~self.ships_df['macro_name'].str.contains('khaak', case=False, na=False) &
+            ~self.ships_df['maker_race'].astype(str).str.contains('khaak', case=False, na=False)
+        ].copy()
+        
+        # Filter by size if a specific size is selected
+        if size_filter != "All Sizes":
+            filtered_ships = filtered_ships[
+                filtered_ships['macro_name'].str.contains(f'_{size_filter.lower()}_', na=False)
+            ]
+        
+        # Get unique types from filtered ships
+        available_types = ["All Types"] + sorted(filtered_ships['ship_type'].dropna().unique())
+        self.comparison_type_filter.addItems(available_types)
+        
+        # Try to restore previous selection if still available
+        index = self.comparison_type_filter.findText(current_type)
+        if index >= 0:
+            self.comparison_type_filter.setCurrentIndex(index)
+        else:
+            self.comparison_type_filter.setCurrentIndex(0)  # Default to "All Types"
+        
+        self.comparison_type_filter.blockSignals(False)
+    
     def apply_ship_filters(self):
         """Apply size and type filters to ship dropdown."""
         size_filter = self.comparison_size_filter.currentText()
         type_filter = self.comparison_type_filter.currentText()
         
-        # Start with all ships
-        filtered_ships = self.ships_df.copy()
+        # Start with all ships, excluding Khaak
+        filtered_ships = self.ships_df[
+            ~self.ships_df['macro_name'].str.contains('khaak', case=False, na=False) &
+            ~self.ships_df['maker_race'].astype(str).str.contains('khaak', case=False, na=False)
+        ].copy()
         
         # Apply size filter
         if size_filter != "All Sizes":
@@ -2460,10 +2740,37 @@ class ShipStatsApp(QMainWindow):
             # Filter weapons based on compatibility
             filtered_weapons = self.weapons_df.copy()
             
+            # Filter out Khaak weapons (players cannot use these)
+            filtered_weapons = filtered_weapons[
+                ~filtered_weapons['weapon_id'].str.contains('khaak', case=False, na=False) &
+                ~filtered_weapons['faction'].astype(str).str.contains('khaak', case=False, na=False)
+            ]
+            
+            # Filter out weapons with Unknown faction
+            filtered_weapons = filtered_weapons[
+                ~filtered_weapons['faction'].astype(str).str.lower().isin(['unknown', 'none', 'nan'])
+            ]
+            
+            # Xenon compatibility filtering - Xenon ships can only use Xenon equipment, non-Xenon ships cannot use Xenon equipment
+            if selected_faction and selected_faction.lower() != 'unknown':
+                if selected_faction.lower() == 'xenon':
+                    # Xenon ships can ONLY use Xenon weapons
+                    filtered_weapons = filtered_weapons[
+                        filtered_weapons['faction'].astype(str).str.lower() == 'xenon'
+                    ]
+                else:
+                    # Non-Xenon ships CANNOT use Xenon weapons
+                    filtered_weapons = filtered_weapons[
+                        filtered_weapons['faction'].astype(str).str.lower() != 'xenon'
+                    ]
+            
             # Advanced size compatibility filtering
             if ship_size:
                 compatible_sizes = self.get_compatible_weapon_sizes(ship_size)
                 filtered_weapons = filtered_weapons[filtered_weapons['size_class'].isin(compatible_sizes)]
+            
+            # Deduplicate weapons by 'weapon_id' field to prevent duplicate entries
+            filtered_weapons = filtered_weapons.drop_duplicates(subset=['weapon_id'], keep='first')
             
             # Faction preference filtering (but don't exclude other factions entirely)
             if selected_faction and selected_faction.lower() != 'unknown':
@@ -2484,16 +2791,32 @@ class ShipStatsApp(QMainWindow):
                 mk_level = row.get('mk_level', 1)
                 size_class = row.get('size_class', 'unknown').upper()
                 
+                # Validate if display_name is usable (not a macro name, text ID, or empty)
+                is_usable_name = (
+                    display_name and 
+                    display_name != weapon_id and 
+                    not display_name.startswith('(') and
+                    not display_name.startswith('Text Ref:') and
+                    '_macro' not in display_name.lower() and
+                    not re.match(r'^[\d,\s]+$', display_name)  # Not just numbers and commas
+                )
+                
                 # Create formatted name with size indicator
                 type_display = weapon_type.replace('_', ' ').title()
-                if display_name and display_name != weapon_id and not display_name.startswith('('):
+                if is_usable_name:
                     # Clean display name by removing reference markers
                     clean_name = display_name.split('{')[0].strip()
                     if clean_name.startswith('(') and ')' in clean_name:
                         clean_name = clean_name.split(')', 1)[1].strip()
+                    
+                    # Remove existing Mk notation from display name to prevent duplication
+                    clean_name = re.sub(r'\s+Mk\d+\s*$', '', clean_name, flags=re.IGNORECASE).strip()
+                    
                     formatted_name = f"[{size_class}] {clean_name} - {faction} {type_display} Mk{mk_level}"
                 else:
-                    formatted_name = f"[{size_class}] {weapon_id} - {faction} {type_display} Mk{mk_level}"
+                    # Fall back to weapon_id but clean it up
+                    clean_id = weapon_id.replace('_macro', '').replace('_', ' ').title()
+                    formatted_name = f"[{size_class}] {clean_id} - {faction} {type_display} Mk{mk_level}"
                 
                 weapon_items.append(formatted_name)
                 weapon_mapping[formatted_name] = row.to_dict()
@@ -2557,10 +2880,37 @@ class ShipStatsApp(QMainWindow):
             # Filter turrets based on compatibility
             filtered_turrets = self.turrets_df.copy()
             
+            # Filter out Khaak turrets (players cannot use these)
+            filtered_turrets = filtered_turrets[
+                ~filtered_turrets['turret_id'].str.contains('khaak', case=False, na=False) &
+                ~filtered_turrets['faction'].astype(str).str.contains('khaak', case=False, na=False)
+            ]
+            
+            # Filter out turrets with Unknown faction
+            filtered_turrets = filtered_turrets[
+                ~filtered_turrets['faction'].astype(str).str.lower().isin(['unknown', 'none', 'nan'])
+            ]
+            
+            # Xenon compatibility filtering - Xenon ships can only use Xenon equipment, non-Xenon ships cannot use Xenon equipment
+            if selected_faction and selected_faction.lower() != 'unknown':
+                if selected_faction.lower() == 'xenon':
+                    # Xenon ships can ONLY use Xenon turrets
+                    filtered_turrets = filtered_turrets[
+                        filtered_turrets['faction'].astype(str).str.lower() == 'xenon'
+                    ]
+                else:
+                    # Non-Xenon ships CANNOT use Xenon turrets
+                    filtered_turrets = filtered_turrets[
+                        filtered_turrets['faction'].astype(str).str.lower() != 'xenon'
+                    ]
+            
             # Advanced size compatibility filtering
             if ship_size:
                 compatible_sizes = self.get_compatible_turret_sizes(ship_size)
                 filtered_turrets = filtered_turrets[filtered_turrets['size_class'].isin(compatible_sizes)]
+            
+            # Deduplicate turrets by 'turret_id' field to prevent duplicate entries
+            filtered_turrets = filtered_turrets.drop_duplicates(subset=['turret_id'], keep='first')
             
             # Faction preference filtering (but don't exclude other factions entirely)
             if selected_faction and selected_faction.lower() != 'unknown':
@@ -2581,16 +2931,32 @@ class ShipStatsApp(QMainWindow):
                 mk_level = row.get('mk_level', 1)
                 size_class = row.get('size_class', 'unknown').upper()
                 
+                # Validate if display_name is usable (not a macro name, text ID, or empty)
+                is_usable_name = (
+                    display_name and 
+                    display_name != turret_id and 
+                    not display_name.startswith('(') and
+                    not display_name.startswith('Text Ref:') and
+                    '_macro' not in display_name.lower() and
+                    not re.match(r'^[\d,\s]+$', display_name)  # Not just numbers and commas
+                )
+                
                 # Create formatted name with size indicator
                 type_display = turret_type.replace('_', ' ').title()
-                if display_name and display_name != turret_id and not display_name.startswith('('):
+                if is_usable_name:
                     # Clean display name by removing reference markers
                     clean_name = display_name.split('{')[0].strip()
                     if clean_name.startswith('(') and ')' in clean_name:
                         clean_name = clean_name.split(')', 1)[1].strip()
+                    
+                    # Remove existing Mk notation from display name to prevent duplication
+                    clean_name = re.sub(r'\s+Mk\d+\s*$', '', clean_name, flags=re.IGNORECASE).strip()
+                    
                     formatted_name = f"[{size_class}] {clean_name} - {faction} {type_display} Mk{mk_level}"
                 else:
-                    formatted_name = f"[{size_class}] {turret_id} - {faction} {type_display} Mk{mk_level}"
+                    # Fall back to turret_id but clean it up
+                    clean_id = turret_id.replace('_macro', '').replace('_', ' ').title()
+                    formatted_name = f"[{size_class}] {clean_id} - {faction} {type_display} Mk{mk_level}"
                 
                 turret_items.append(formatted_name)
                 turret_mapping[formatted_name] = row.to_dict()
@@ -2620,6 +2986,30 @@ class ShipStatsApp(QMainWindow):
             # Filter engines based on compatibility
             filtered_engines = self.engines_df.copy()
             
+            # Filter out Khaak engines (players cannot use these)
+            filtered_engines = filtered_engines[
+                ~filtered_engines['name'].str.contains('khaak', case=False, na=False) &
+                ~filtered_engines['maker_race'].astype(str).str.contains('khaak', case=False, na=False)
+            ]
+            
+            # Filter out engines with Unknown maker race
+            filtered_engines = filtered_engines[
+                ~filtered_engines['maker_race'].astype(str).str.lower().isin(['unknown', 'none', 'nan'])
+            ]
+            
+            # Xenon compatibility filtering - Xenon ships can only use Xenon equipment, non-Xenon ships cannot use Xenon equipment
+            if selected_faction and selected_faction.lower() != 'unknown':
+                if selected_faction.lower() == 'xenon':
+                    # Xenon ships can ONLY use Xenon engines
+                    filtered_engines = filtered_engines[
+                        filtered_engines['maker_race'].astype(str).str.lower() == 'xenon'
+                    ]
+                else:
+                    # Non-Xenon ships CANNOT use Xenon engines
+                    filtered_engines = filtered_engines[
+                        filtered_engines['maker_race'].astype(str).str.lower() != 'xenon'
+                    ]
+            
             # Size-based filtering - engines should match ship size
             if ship_size:
                 size_lower = ship_size.lower()
@@ -2643,6 +3033,9 @@ class ShipStatsApp(QMainWindow):
                     filtered_engines = filtered_engines[
                         filtered_engines['name'].str.contains('_xl_', case=False, na=False)
                     ]
+            
+            # Deduplicate engines by 'name' field to prevent duplicate entries
+            filtered_engines = filtered_engines.drop_duplicates(subset=['name'], keep='first')
             
             # Faction preference filtering (but don't exclude other factions entirely)
             if selected_faction and selected_faction.lower() != 'unknown':
@@ -2679,6 +3072,10 @@ class ShipStatsApp(QMainWindow):
                     clean_name = display_name.split('{')[0].strip()
                     if clean_name.startswith('(') and ')' in clean_name:
                         clean_name = clean_name.split(')', 1)[1].strip()
+                    
+                    # Remove existing Mk notation from display name to prevent duplication (e.g., "Engine Mk1" becoming "Engine Mk1 Mk1")
+                    clean_name = re.sub(r'\s+Mk\d+\s*$', '', clean_name, flags=re.IGNORECASE).strip()
+                    
                     formatted_name = f"{size_indicator}{clean_name} Mk{mk_level} - {faction}"
                 else:
                     formatted_name = f"{size_indicator}{engine_id} Mk{mk_level} - {faction}"
@@ -2711,6 +3108,30 @@ class ShipStatsApp(QMainWindow):
             # Filter shields based on compatibility
             filtered_shields = self.shields_df.copy()
             
+            # Filter out Khaak shields (players cannot use these)
+            filtered_shields = filtered_shields[
+                ~filtered_shields['name'].str.contains('khaak', case=False, na=False) &
+                ~filtered_shields['maker_race'].astype(str).str.contains('khaak', case=False, na=False)
+            ]
+            
+            # Filter out shields with Unknown maker race
+            filtered_shields = filtered_shields[
+                ~filtered_shields['maker_race'].astype(str).str.lower().isin(['unknown', 'none', 'nan'])
+            ]
+            
+            # Xenon compatibility filtering - Xenon ships can only use Xenon equipment, non-Xenon ships cannot use Xenon equipment
+            if selected_faction and selected_faction.lower() != 'unknown':
+                if selected_faction.lower() == 'xenon':
+                    # Xenon ships can ONLY use Xenon shields
+                    filtered_shields = filtered_shields[
+                        filtered_shields['maker_race'].astype(str).str.lower() == 'xenon'
+                    ]
+                else:
+                    # Non-Xenon ships CANNOT use Xenon shields
+                    filtered_shields = filtered_shields[
+                        filtered_shields['maker_race'].astype(str).str.lower() != 'xenon'
+                    ]
+            
             # Size-based filtering (shields have size compatibility)
             if ship_size:
                 size_lower = ship_size.lower()
@@ -2735,6 +3156,9 @@ class ShipStatsApp(QMainWindow):
                         filtered_shields['shield_size'].isin(['l', 'xl'])
                     ]
             
+            # Deduplicate shields by 'name' field to prevent duplicate entries
+            filtered_shields = filtered_shields.drop_duplicates(subset=['name'], keep='first')
+            
             # Faction preference filtering
             if selected_faction and selected_faction.lower() != 'unknown':
                 # Sort so faction shields appear first, but include others
@@ -2757,15 +3181,31 @@ class ShipStatsApp(QMainWindow):
                 # Create size indicator from shield_size
                 size_indicator = f"[{shield_size.upper()}] " if shield_size != 'unknown' else ""
                 
+                # Validate if display_name is usable (not a macro name, text ID, or empty)
+                is_usable_name = (
+                    display_name and 
+                    display_name != shield_id and 
+                    not display_name.startswith('(') and
+                    not display_name.startswith('Text Ref:') and
+                    '_macro' not in display_name.lower() and
+                    not re.match(r'^[\d,\s]+$', display_name)  # Not just numbers and commas
+                )
+                
                 # Create formatted name
-                if display_name and display_name != shield_id and not display_name.startswith('('):
+                if is_usable_name:
                     # Clean display name by removing reference markers
                     clean_name = display_name.split('{')[0].strip()
                     if clean_name.startswith('(') and ')' in clean_name:
                         clean_name = clean_name.split(')', 1)[1].strip()
+                    
+                    # Remove existing Mk notation from display name to prevent duplication
+                    clean_name = re.sub(r'\s+Mk\d+\s*$', '', clean_name, flags=re.IGNORECASE).strip()
+                    
                     formatted_name = f"{size_indicator}{clean_name} Mk{mk_level} - {faction}"
                 else:
-                    formatted_name = f"{size_indicator}{shield_id} Mk{mk_level} - {faction}"
+                    # Fall back to shield_id but clean it up
+                    clean_id = shield_id.replace('_macro', '').replace('_', ' ').title()
+                    formatted_name = f"{size_indicator}{clean_id} Mk{mk_level} - {faction}"
                 
                 shield_items.append(formatted_name)
                 shield_mapping[formatted_name] = row.to_dict()

@@ -138,7 +138,7 @@ class SetupDialog(QDialog):
         
     def auto_detect_x4(self):
         """Automatically detect X4 installation."""
-        self.progress_text.append("🔍 Searching for X4: Foundations installation...")
+        self.progress_text.append("Searching for X4: Foundations installation...")
         
         x4_path = self.extractor.find_x4_installation()
         
@@ -147,12 +147,12 @@ class SetupDialog(QDialog):
             self.path_label.setText(f"Found: {x4_path}")
             self.path_label.setStyleSheet("color: green;")
             self.extract_btn.setEnabled(True)
-            self.progress_text.append(f"✅ X4 found at: {x4_path}")
+            self.progress_text.append(f"X4 found at: {x4_path}")
         else:
             self.path_label.setText("X4 installation not found")
             self.path_label.setStyleSheet("color: red;")
             self.extract_btn.setEnabled(False)
-            self.progress_text.append("❌ X4 installation not found automatically")
+            self.progress_text.append("X4 installation not found automatically")
             self.progress_text.append("Please use 'Browse...' to locate X4.exe manually")
             
     def browse_x4_path(self):
@@ -172,9 +172,9 @@ class SetupDialog(QDialog):
                 self.path_label.setText(f"Selected: {x4_path}")
                 self.path_label.setStyleSheet("color: green;")
                 self.extract_btn.setEnabled(True)
-                self.progress_text.append(f"✅ X4 manually selected: {x4_path}")
+                self.progress_text.append(f"X4 manually selected: {x4_path}")
             else:
-                self.progress_text.append("❌ Invalid X4 installation directory")
+                self.progress_text.append("Invalid X4 installation directory")
                 
     def start_extraction(self):
         """Start the data extraction process."""
@@ -201,14 +201,14 @@ class SetupDialog(QDialog):
         self.extract_btn.setEnabled(True)
         
         if success:
-            self.progress_text.append("✅ Data extraction completed successfully!")
+            self.progress_text.append("Data extraction completed successfully!")
             QMessageBox.information(
                 self,
                 "Success",
                 "X4 data has been extracted successfully!\nYou can now close this dialog and run the application."
             )
         else:
-            self.progress_text.append("❌ Data extraction failed.")
+            self.progress_text.append("Data extraction failed.")
             QMessageBox.warning(
                 self,
                 "Extraction Failed",

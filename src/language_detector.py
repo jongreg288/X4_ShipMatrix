@@ -91,7 +91,7 @@ class X4LanguageDetector:
                     return LOCALE_TO_X4_MAP[base_lang]
                     
         except Exception as e:
-            print(f"⚠️ Could not detect system language: {e}")
+            print(f"Could not detect system language: {e}")
             
         # Default to English if detection fails
         return 44
@@ -118,7 +118,7 @@ class X4LanguageDetector:
                             try:
                                 lang_id = int(lang_elem.text)
                                 if lang_id in X4_LANGUAGE_MAP:
-                                    print(f"✅ Found X4 game language setting: {X4_LANGUAGE_MAP[lang_id]} (ID: {lang_id})")
+                                    print(f"Found X4 game language setting: {X4_LANGUAGE_MAP[lang_id]} (ID: {lang_id})")
                                     return lang_id
                             except ValueError:
                                 continue
@@ -127,7 +127,7 @@ class X4LanguageDetector:
                         continue
                         
         except Exception as e:
-            print(f"⚠️ Could not read X4 game language setting: {e}")
+            print(f"Could not read X4 game language setting: {e}")
             
         return None
         
@@ -157,7 +157,7 @@ class X4LanguageDetector:
                 
                 if language.lower() in steam_to_x4:
                     steam_lang_id = steam_to_x4[language.lower()]
-                    print(f"✅ Found Steam language: {X4_LANGUAGE_MAP[steam_lang_id]} (ID: {steam_lang_id})")
+                    print(f"Found Steam language: {X4_LANGUAGE_MAP[steam_lang_id]} (ID: {steam_lang_id})")
                     return steam_lang_id
                     
         except (FileNotFoundError, OSError, KeyError):
@@ -174,11 +174,11 @@ class X4LanguageDetector:
             
         # Check user override first
         if self._user_override is not None:
-            print(f"🎯 Using user-selected language: {X4_LANGUAGE_MAP[self._user_override]} (ID: {self._user_override})")
+            print(f"Using user-selected language: {X4_LANGUAGE_MAP[self._user_override]} (ID: {self._user_override})")
             self._cached_language_id = self._user_override
             return self._user_override
             
-        print("🔍 Detecting language preference...")
+        print("Detecting language preference...")
         
         # Try X4 game config first (highest priority)
         if x4_install_path:
@@ -195,7 +195,7 @@ class X4LanguageDetector:
             
         # Fall back to system language
         system_lang = self.detect_system_language()
-        print(f"🌍 Using system language: {X4_LANGUAGE_MAP[system_lang]} (ID: {system_lang})")
+        print(f"Using system language: {X4_LANGUAGE_MAP[system_lang]} (ID: {system_lang})")
         self._cached_language_id = system_lang
         return system_lang
         
@@ -204,7 +204,7 @@ class X4LanguageDetector:
         if language_id in X4_LANGUAGE_MAP:
             self._user_override = language_id
             self._cached_language_id = None  # Clear cache
-            print(f"🎯 Language override set to: {X4_LANGUAGE_MAP[language_id]} (ID: {language_id})")
+            print(f"Language override set to: {X4_LANGUAGE_MAP[language_id]} (ID: {language_id})")
         else:
             raise ValueError(f"Invalid language ID: {language_id}")
             
@@ -212,7 +212,7 @@ class X4LanguageDetector:
         """Clear user language override."""
         self._user_override = None
         self._cached_language_id = None  # Clear cache
-        print("🔄 Language override cleared - will auto-detect")
+        print("Language override cleared - will auto-detect")
         
     def get_language_file_name(self, language_id: Optional[int] = None) -> str:
         """Get the language file name for the specified or detected language ID."""
@@ -286,7 +286,7 @@ if __name__ == "__main__":
     # Test the language detection
     detector = X4LanguageDetector()
     
-    print("🌍 X4 Language Detection Test")
+    print("X4 Language Detection Test")
     print("=" * 40)
     
     system_lang = detector.detect_system_language()

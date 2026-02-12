@@ -27,37 +27,37 @@ def find_inno_setup():
 
 def main():
     """Build the installer using Inno Setup."""
-    print("🔨 Building X4 ShipMatrix Installer...")
+    print("Building X4 ShipMatrix Installer...")
     print("=" * 50)
     
     # Find Inno Setup compiler
     iscc_path = find_inno_setup()
     
     if not iscc_path:
-        print("❌ Inno Setup not found!")
+        print("Inno Setup not found!")
         print("\nPlease install Inno Setup from:")
         print("   https://jrsoftware.org/isdl.php")
         print("\nAfter installation, run this script again.")
         return 1
     
-    print(f"✅ Found Inno Setup: {iscc_path}")
+    print(f"Found Inno Setup: {iscc_path}")
     
     # Get script paths
     build_scripts_dir = Path(__file__).parent
     iss_script = build_scripts_dir / "X4_ShipMatrix_Setup.iss"
     
     if not iss_script.exists():
-        print(f"❌ Installer script not found: {iss_script}")
+        print(f"Installer script not found: {iss_script}")
         return 1
     
-    print(f"✅ Found installer script: {iss_script}")
+    print(f"Found installer script: {iss_script}")
     
     # Ensure output directory exists
     output_dir = build_scripts_dir.parent / "releases" / "latest"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Compile the installer
-    print("\n🏗️ Compiling installer...")
+    print("\nCompiling installer...")
     try:
         result = subprocess.run(
             [iscc_path, str(iss_script)],
@@ -76,23 +76,23 @@ def main():
             size_mb = installer.stat().st_size / (1024 * 1024)
             
             print("\n" + "=" * 50)
-            print("✅ Installer built successfully!")
+            print("Installer built successfully!")
             print("=" * 50)
-            print(f"📦 File: {installer.name}")
-            print(f"📏 Size: {size_mb:.1f} MB")
-            print(f"📁 Location: {installer}")
-            print("\n💡 You can now distribute this single file to users!")
+            print(f"File: {installer.name}")
+            print(f"Size: {size_mb:.1f} MB")
+            print(f"Location: {installer}")
+            print("\nYou can now distribute this single file to users!")
             
         else:
-            print("⚠️ Installer was compiled but output file not found")
+            print("Installer was compiled but output file not found")
             print(f"   Expected in: {output_dir}")
             
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Build failed!")
+        print(f"\nBuild failed!")
         print(f"Error: {e.stderr}")
         return 1
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\nUnexpected error: {e}")
         return 1
     
     return 0

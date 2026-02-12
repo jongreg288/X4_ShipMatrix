@@ -11,9 +11,9 @@ def install_pyinstaller():
     """Install PyInstaller if not already installed."""
     try:
         import PyInstaller
-        print("✅ PyInstaller already installed")
+        print("PyInstaller already installed")
     except ImportError:
-        print("📦 Installing PyInstaller...")
+        print("Installing PyInstaller...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
 
 
@@ -40,16 +40,16 @@ def build_executable():
         cmd.remove("--icon")
         cmd.remove("icon.ico")
     
-    print("🔨 Building executable...")
+    print("Building executable...")
     print(f"Command: {' '.join(cmd)}")
     
     try:
         subprocess.check_call(cmd)
-        print("✅ Build completed successfully!")
-        print("📁 Executable created: dist/X4ShipParse.exe")
+        print("Build completed successfully!")
+        print("Executable created: dist/X4ShipParse.exe")
         
         # Instructions for distribution
-        print("\n📋 Distribution Instructions:")
+        print("\nDistribution Instructions:")
         print("─" * 40)
         print("1. The executable is in the 'dist' folder")
         print("2. Users will need to:")
@@ -59,7 +59,7 @@ def build_executable():
         print("3. The app will auto-detect X4 and extract XML files")
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed: {e}")
+        print(f"Build failed: {e}")
         return False
         
     return True
@@ -97,7 +97,7 @@ mkdir "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\X4 Ship Parse" 2>nul
 powershell "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\X4 Ship Parse\\X4 Ship Parse.lnk'); $Shortcut.TargetPath = '%INSTALL_DIR%\\X4ShipParse.exe'; $Shortcut.Save()"
 
 echo.
-echo ✅ Installation completed successfully!
+echo Installation completed successfully!
 echo.
 echo You can now run X4 Ship Parse from:
 echo - Desktop shortcut
@@ -110,12 +110,12 @@ pause
     with open("install.bat", "w") as f:
         f.write(installer_content)
         
-    print("✅ Created install.bat")
+    print("Created install.bat")
 
 
 def main():
     """Main build function."""
-    print("🏗️ X4 Ship Parse - Build System")
+    print("X4 Ship Parse - Build System")
     print("=" * 35)
     
     # Install PyInstaller
@@ -128,18 +128,18 @@ def main():
         # Create installer script
         create_installer_script()
         
-        print("\n🎉 Build process completed!")
+        print("\nBuild process completed!")
         print("\nFiles created:")
         print("- dist/X4ShipParse.exe (main executable)")
         print("- install.bat (installer script)")
         
-        print("\n📦 To distribute:")
+        print("\nTo distribute:")
         print("1. Zip the contents of the 'dist' folder")
         print("2. Include install.bat for easy installation")
         print("3. Users run install.bat to set up shortcuts")
         
     else:
-        print("❌ Build failed. Check error messages above.")
+        print("Build failed. Check error messages above.")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ Generates CSV files by importing as a package.
 """
 
 if __name__ == "__main__":
-    print("🚀 X4 Ship Matrix CSV Generator")
+    print("X4 Ship Matrix CSV Generator")
     print("=" * 50)
     
     # Import and run generation
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         # Create CSV output directory
         csv_dir = Path("data/csv_cache")
         csv_dir.mkdir(parents=True, exist_ok=True)
-        print(f"📁 CSV files will be saved to: {csv_dir}")
+        print(f"CSV files will be saved to: {csv_dir}")
         
         # Run manual generation with proper imports
         import pandas as pd
@@ -28,32 +28,32 @@ if __name__ == "__main__":
         from language_detector import language_detector
         import data_parser
         
-        print("📊 Loading text mappings...")
+        print("Loading text mappings...")
         data_parser.load_text_mappings()
         
-        print("📊 Generating engines.csv...")
+        print("Generating engines.csv...")
         engines_df = data_parser.load_engine_data()
         if not engines_df.empty:
             engines_csv = csv_dir / "engines.csv"
             engines_df.to_csv(engines_csv, index=False)
-            print(f"✅ Saved {len(engines_df)} engines to {engines_csv}")
+            print(f"Saved {len(engines_df)} engines to {engines_csv}")
         
-        print("📊 Generating ships.csv...")
+        print("Generating ships.csv...")
         ships_df = data_parser.load_ship_data(engines_df)
         if not ships_df.empty:
             ships_csv = csv_dir / "ships.csv"
             ships_df.to_csv(ships_csv, index=False)
-            print(f"✅ Saved {len(ships_df)} ships to {ships_csv}")
+            print(f"Saved {len(ships_df)} ships to {ships_csv}")
         
-        print("📊 Generating shields.csv...")
+        print("Generating shields.csv...")
         shields_df = data_parser.parse_shields()
         if not shields_df.empty:
             shields_csv = csv_dir / "shields.csv"
             shields_df.to_csv(shields_csv, index=False)
-            print(f"✅ Saved {len(shields_df)} shields to {shields_csv}")
+            print(f"Saved {len(shields_df)} shields to {shields_csv}")
         
         # For now, let's manually create weapon/turret CSVs with basic data
-        print("📊 Generating basic weapons.csv and turrets.csv...")
+        print("Generating basic weapons.csv and turrets.csv...")
         
         # Create basic weapon DataFrame structure
         weapons_data = []
@@ -203,7 +203,7 @@ if __name__ == "__main__":
                         })
                     
                 except Exception as e:
-                    print(f"⚠️ Error processing {macro_file}: {e}")
+                    print(f"Error processing {macro_file}: {e}")
                     continue
         
         # Save weapons and turrets CSVs
@@ -212,17 +212,17 @@ if __name__ == "__main__":
             weapons_df = weapons_df.sort_values(['faction', 'size_class', 'weapon_type', 'mk_level'])
             weapons_csv = csv_dir / "weapons.csv"
             weapons_df.to_csv(weapons_csv, index=False)
-            print(f"✅ Saved {len(weapons_df)} weapons to {weapons_csv}")
+            print(f"Saved {len(weapons_df)} weapons to {weapons_csv}")
         
         if turrets_data:
             turrets_df = pd.DataFrame(turrets_data)
             turrets_df = turrets_df.sort_values(['faction', 'size_class', 'turret_type', 'mk_level'])
             turrets_csv = csv_dir / "turrets.csv"
             turrets_df.to_csv(turrets_csv, index=False)
-            print(f"✅ Saved {len(turrets_df)} turrets to {turrets_csv}")
+            print(f"Saved {len(turrets_df)} turrets to {turrets_csv}")
         
         # Summary
-        print(f"\n📊 Generation Results:")
+        print(f"\nGeneration Results:")
         print(f"  Ships: {len(ships_df) if not ships_df.empty else 0}")
         print(f"  Engines: {len(engines_df) if not engines_df.empty else 0}")
         print(f"  Shields: {len(shields_df) if not shields_df.empty else 0}")
@@ -232,15 +232,15 @@ if __name__ == "__main__":
         # List generated files
         csv_files = list(csv_dir.glob("*.csv"))
         if csv_files:
-            print(f"\n📄 Generated CSV files:")
+            print(f"\nGenerated CSV files:")
             for csv_file in sorted(csv_files):
                 size_mb = csv_file.stat().st_size / (1024 * 1024)
                 print(f"  {csv_file.name} ({size_mb:.2f} MB)")
         
-        print(f"\n✅ CSV generation completed successfully!")
-        print(f"📦 For .exe packaging, include the entire '{csv_dir}' folder")
+        print(f"\nCSV generation completed successfully!")
+        print(f"For .exe packaging, include the entire '{csv_dir}' folder")
         
     except Exception as e:
-        print(f"❌ Error during CSV generation: {e}")
+        print(f"Error during CSV generation: {e}")
         import traceback
         traceback.print_exc()

@@ -18,7 +18,7 @@ from app.data_parser import load_text_mappings, get_current_language_info, refre
 
 
 def main():
-    print("🌍 X4 Language Detection & Selection Test")
+    print("X4 Language Detection & Selection Test")
     print("=" * 50)
     
     # Show current detection
@@ -40,8 +40,8 @@ def main():
     try:
         load_text_mappings()
         info = get_current_language_info()
-        print(f"   ✅ Loaded {info['mapping_count']} text entries")
-        print(f"   📄 From file: {info['language_file']}")
+        print(f"   Loaded {info['mapping_count']} text entries")
+        print(f"   From file: {info['language_file']}")
         
         # Test a few text references
         from app.data_parser import resolve_text_reference_advanced
@@ -60,7 +60,7 @@ def main():
                 print(f"     {ref} → '{resolved}'")
                 
     except Exception as e:
-        print(f"   ❌ Error loading text mappings: {e}")
+        print(f"   Error loading text mappings: {e}")
     
     # Demonstrate language override
     print("\n4. Language Override Demonstration:")
@@ -78,7 +78,7 @@ def main():
             print("   → Override cleared - back to auto-detection")
             
         except Exception as e:
-            print(f"   ⚠️ Override test failed: {e}")
+            print(f"   Override test failed: {e}")
     
     print("\n5. Language File Validation:")
     data_dir = Path("data")
@@ -97,13 +97,13 @@ def main():
                 for lang_id, lang_name, lang_file in found_files:
                     print(f"     ✓ {lang_name}: {lang_file}")
             else:
-                print("   ⚠️ No language files found in data/t/")
+                print("   No language files found in data/t/")
         else:
-            print("   ⚠️ No data/t/ directory found")
+            print("   No data/t/ directory found")
     else:
-        print("   ⚠️ No data directory found")
+        print("   No data directory found")
     
-    print("\n✅ Language detection test completed!")
+    print("\nLanguage detection test completed!")
     print("\nTo use different languages:")
     print("1. Make sure the language file exists in data/t/")
     print("2. Use Settings → Language... in the GUI")

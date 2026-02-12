@@ -7,6 +7,8 @@ a = Analysis(
     datas=[
         ('../src', 'src'),
         ('../README.md', '.'),
+        # Include CSV cache for fast data loading
+        ('../data/csv_cache', 'data/csv_cache'),
         # Include matplotlib data files
         ('C:/Users/pheno/Code_Projects/X4_ShipMatrix/.venv/Lib/site-packages/matplotlib/mpl-data', 'matplotlib/mpl-data'),
     ],

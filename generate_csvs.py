@@ -61,7 +61,7 @@ def determine_best_csv_location():
     # For an executable package, we want CSV files in the same directory as the executable
     # or in a subdirectory that gets packaged with the .exe
     
-    print("📍 Available CSV locations:")
+    print("Available CSV locations:")
     print(f"  1. {src_location} - Inside source code (for development)")
     print(f"  2. {data_location} - With game data (current choice)")  
     print(f"  3. {assets_location} - Dedicated assets folder (for packaging)")
@@ -75,12 +75,12 @@ def determine_best_csv_location():
 
 def main():
     """Main CSV generation function."""
-    print("🚀 X4 Ship Matrix CSV Generator")
+    print("X4 Ship Matrix CSV Generator")
     print("=" * 50)
     
     # Determine CSV output location
     csv_location = determine_best_csv_location()
-    print(f"📁 CSV files will be saved to: {csv_location}")
+    print(f"CSV files will be saved to: {csv_location}")
     
     # Create the directory
     csv_location.mkdir(parents=True, exist_ok=True)
@@ -89,7 +89,7 @@ def main():
     try:
         results = generate_all_csv_files()
         
-        print("\n📊 Generation Results:")
+        print("\nGeneration Results:")
         print(f"  Ships: {results['ships']}")
         print(f"  Engines: {results['engines']}")
         print(f"  Shields: {results['shields']}")
@@ -97,18 +97,18 @@ def main():
         print(f"  Turrets: {results['turrets']}")
         
         total_items = sum(results.values())
-        print(f"\n✅ Successfully generated CSV files with {total_items} total items")
+        print(f"\nSuccessfully generated CSV files with {total_items} total items")
         
         # List the generated files
         csv_files = list(csv_location.glob("*.csv"))
         if csv_files:
-            print(f"\n📄 Generated CSV files:")
+            print(f"\nGenerated CSV files:")
             for csv_file in sorted(csv_files):
                 size_mb = csv_file.stat().st_size / (1024 * 1024)
                 print(f"  {csv_file.name} ({size_mb:.2f} MB)")
         
         # Packaging recommendations
-        print(f"\n📦 Packaging Recommendations:")
+        print(f"\nPackaging Recommendations:")
         print(f"  • Include the entire '{csv_location}' folder in your .exe package")
         print(f"  • CSV files provide 10-100x faster loading than XML parsing")
         print(f"  • Total CSV size: ~{sum(f.stat().st_size for f in csv_files) / (1024*1024):.1f}MB (vs several GB of XML)")
@@ -117,7 +117,7 @@ def main():
         return True
         
     except Exception as e:
-        print(f"❌ Error during CSV generation: {e}")
+        print(f"Error during CSV generation: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -125,8 +125,8 @@ def main():
 if __name__ == "__main__":
     success = main()
     if success:
-        print("\n🎉 CSV generation completed successfully!")
+        print("\nCSV generation completed successfully!")
         print("You can now use the fast CSV loading in your Ship Matrix application.")
     else:
-        print("\n💥 CSV generation failed. Check error messages above.")
+        print("\nCSV generation failed. Check error messages above.")
         sys.exit(1)

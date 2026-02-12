@@ -66,8 +66,8 @@ class X4DataExtractor:
                 ships_dir = dev_data_path / "assets/units"
                 
                 if engines_dir.exists() and ships_dir.exists():
-                    safe_print(f"✅ Found development data at: {dev_data_path}")
-                    update_loading_status("✅ Found existing X4 data files")
+                    safe_print(f"Found development data at: {dev_data_path}")
+                    update_loading_status("Found existing X4 data files")
                     return dev_data_path
                     
         return None
@@ -104,8 +104,8 @@ class X4DataExtractor:
         # Check each path for X4.exe
         for path in possible_paths:
             if path.exists() and (path / "X4.exe").exists():
-                safe_print(f"✅ Found X4 installation at: {path}")
-                update_loading_status(f"✅ Found X4 installation")
+                safe_print(f"Found X4 installation at: {path}")
+                update_loading_status(f"Found X4 installation")
                 self.x4_install_path = path
                 return path
                 
@@ -180,10 +180,10 @@ class X4DataExtractor:
         
         for tool_path in possible_paths:
             if tool_path.exists():
-                safe_print(f"✅ Found bundled XRCatTool at: {tool_path}")
+                safe_print(f"Found bundled XRCatTool at: {tool_path}")
                 return tool_path
             
-        safe_print("⚠️ Bundled XRCatTool.exe not found")
+        safe_print("Bundled XRCatTool.exe not found")
         return None
         
     def extract_xml_files(self) -> bool:
@@ -192,16 +192,16 @@ class X4DataExtractor:
         X4 stores data in .cat/.dat file pairs that need special extraction.
         """
         if not self.x4_install_path:
-            safe_print("❌ X4 installation path not found")
+            safe_print("X4 installation path not found")
             return False
             
-        safe_print("🔄 Extracting XML files from X4 game data...")
+        safe_print("Extracting XML files from X4 game data...")
         
         # Look for .cat/.dat files in the game directory
         cat_files = list(self.x4_install_path.glob("*.cat"))
         
         if not cat_files:
-            safe_print("❌ No .cat files found in X4 installation")
+            safe_print("No .cat files found in X4 installation")
             return False
             
         # Try to use XStudio or other X4 modding tools if available
@@ -257,8 +257,8 @@ class X4DataExtractor:
             # Create output directory
             self.data_dir.mkdir(exist_ok=True)
             
-            safe_print(f"🔧 Using XRCatTool: {tool_path}")
-            safe_print(f"📁 Extracting to: {self.data_dir.absolute()}")
+            safe_print(f"Using XRCatTool: {tool_path}")
+            safe_print(f"Extracting to: {self.data_dir.absolute()}")
             
             # XRCatTool command: XRCatTool -in <cat_files> -out <output_dir> -include <patterns>
             # Extract only the specific files needed for ship parsing
@@ -293,12 +293,12 @@ class X4DataExtractor:
             detected_lang_id = language_detector.get_language_id(Path(self.x4_install_path) if self.x4_install_path else None)
             lang_name = language_detector.get_language_name(detected_lang_id)
             
-            safe_print(f"🌍 Detected language: {lang_name} (ID: {detected_lang_id})")
-            safe_print(f"📝 Will extract all translation files from t/")
+            safe_print(f"Detected language: {lang_name} (ID: {detected_lang_id})")
+            safe_print(f"Will extract all translation files from t/")
             
-            safe_print("🚀 Starting extraction...")
+            safe_print("Starting extraction...")
             safe_print(f"Command: {' '.join(cmd)}")
-            update_loading_status("🔄 Extracting ship and engine data from X4 archives...")
+            update_loading_status("Extracting ship and engine data from X4 archives...")
             
             # Run XRCatTool
             result = subprocess.run(cmd, 
@@ -307,7 +307,7 @@ class X4DataExtractor:
                                   check=True,
                                   cwd=str(tool_path.parent))
             
-            safe_print("✅ XRCatTool extraction completed successfully")
+            safe_print("XRCatTool extraction completed successfully")
             
             # Verify that we got the files we need
             engines_dir = self.data_dir / "assets/props/Engines"
@@ -330,7 +330,7 @@ class X4DataExtractor:
             translation_count = len(list(t_dir.glob("*.xml"))) if t_dir.exists() else 0
             
             if engine_count > 0 and ships_found > 0 and index_count > 0:
-                safe_print(f"📊 Extracted:")
+                safe_print(f"Extracted:")
                 safe_print(f"   - {ships_found} ship files (size_l, size_m, size_s, size_xl)")
                 safe_print(f"   - {engine_count} engine files")
                 safe_print(f"   - {storage_count} storage module files")
@@ -338,19 +338,19 @@ class X4DataExtractor:
                 safe_print(f"   - {translation_count} translation files")
                 return True
             else:
-                safe_print(f"⚠️ Insufficient files extracted:")
+                safe_print(f"Insufficient files extracted:")
                 safe_print(f"   - Ships: {ships_found}, Engines: {engine_count}, Index: {index_count}")
                 return False
                 
         except subprocess.CalledProcessError as e:
-            safe_print(f"❌ XRCatTool extraction failed: {e}")
+            safe_print(f"XRCatTool extraction failed: {e}")
             if e.stdout:
                 safe_print(f"stdout: {e.stdout}")
             if e.stderr:  
                 safe_print(f"stderr: {e.stderr}")
             return False
         except Exception as e:
-            safe_print(f"❌ Unexpected error during extraction: {e}")
+            safe_print(f"Unexpected error during extraction: {e}")
             return False
     
     def _check_for_unpacked_files(self) -> bool:
@@ -374,7 +374,7 @@ class X4DataExtractor:
                 ships_dir = data_dir / "assets/units"
                 
                 if engines_dir.exists() and ships_dir.exists():
-                    print(f"✅ Found unpacked XML files at: {data_dir}")
+                    print(f"Found unpacked XML files at: {data_dir}")
                     # Copy files to our data directory
                     return self._copy_xml_files(data_dir)
                     
@@ -395,21 +395,21 @@ class X4DataExtractor:
             target_engines = target_assets / "props/Engines"
             if source_engines.exists():
                 shutil.copytree(source_engines, target_engines, dirs_exist_ok=True)
-                print("✅ Copied engine XML files")
+                print("Copied engine XML files")
                 
             # Copy ships
             source_units = source_dir / "assets/units"
             target_units = target_assets / "units"
             if source_units.exists():
                 shutil.copytree(source_units, target_units, dirs_exist_ok=True)
-                print("✅ Copied ship XML files")
+                print("Copied ship XML files")
                 
             # Copy storage modules (if they exist)
             source_storage = source_dir / "assets/props/StorageModules"
             target_storage = target_assets / "props/StorageModules"
             if source_storage.exists():
                 shutil.copytree(source_storage, target_storage, dirs_exist_ok=True)
-                print("✅ Copied storage module XML files")
+                print("Copied storage module XML files")
                 
             # Copy text files for ship names (language-aware)
             source_text = source_dir / "t"
@@ -425,20 +425,20 @@ class X4DataExtractor:
                 preferred_text = source_text / lang_file
                 if preferred_text.exists():
                     shutil.copy2(preferred_text, target_text / lang_file)
-                    print(f"✅ Copied {lang_name} text file for ship names: {lang_file}")
+                    print(f"Copied {lang_name} text file for ship names: {lang_file}")
                 else:
                     # Fallback to English if preferred language not found
                     english_text = source_text / "0001-l044.xml"
                     if english_text.exists():
                         shutil.copy2(english_text, target_text / "0001-l044.xml")
-                        print("⚠️ Preferred language not found - using English text file as fallback")
+                        print("Preferred language not found - using English text file as fallback")
                     else:
-                        print("❌ No text files found for ship names")
+                        print("No text files found for ship names")
                 
             return True
             
         except Exception as e:
-            print(f"❌ Error copying XML files: {e}")
+            print(f"Error copying XML files: {e}")
             return False
     
     def setup_data_directory(self) -> bool:
@@ -447,18 +447,18 @@ class X4DataExtractor:
         # First, check if we can find development data (for executable distribution)
         dev_data_path = self._find_development_data()
         if dev_data_path:
-            print("🔗 Using development data files...")
+            print("Using development data files...")
             try:
                 return self._copy_xml_files(dev_data_path)
             except Exception as e:
-                print(f"⚠️ Could not copy from development data: {e}")
+                print(f"Could not copy from development data: {e}")
                 # Continue to try X4 installation extraction
         
         # Try to find X4 installation
         x4_path = self.find_x4_installation()
         
         if not x4_path:
-            print("❌ Could not find X4: Foundations installation")
+            print("Could not find X4: Foundations installation")
             print("Please install X4: Foundations or specify the installation path manually")
             return False
             
@@ -466,7 +466,7 @@ class X4DataExtractor:
         success = self.extract_xml_files()
         
         if not success:
-            print("\n📋 Manual Setup Instructions:")
+            print("\nManual Setup Instructions:")
             print("─" * 50)
             print(f"X4 Installation found at: {x4_path}")
             print("\nTo manually extract XML files:")
@@ -491,39 +491,39 @@ class X4DataExtractor:
         
         for path in required_paths:
             if not path.exists():
-                print(f"❌ Missing required directory: {path}")
+                print(f"Missing required directory: {path}")
                 return False
                 
             # Check for XML files
             xml_files = list(path.glob("*.xml"))
             if not xml_files:
-                print(f"❌ No XML files found in: {path}")
+                print(f"No XML files found in: {path}")
                 return False
                 
-        print("✅ Data directory validation passed")
+        print("Data directory validation passed")
         return True
 
 
 def setup_x4_data() -> bool:
     """Main function to set up X4 data for the application."""
     
-    print("🚀 X4 Ship Parse - Data Setup")
+    print("X4 Ship Parse - Data Setup")
     print("=" * 40)
     
     extractor = X4DataExtractor()
     
     # Check if data directory already exists and is valid
     if extractor.validate_data_directory():
-        print("✅ X4 data already set up and valid")
+        print("X4 data already set up and valid")
         return True
         
-    print("🔍 Setting up X4 game data...")
+    print("Setting up X4 game data...")
     success = extractor.setup_data_directory()
     
     if success:
-        print("✅ X4 data setup completed successfully!")
+        print("X4 data setup completed successfully!")
     else:
-        print("❌ X4 data setup failed. Manual setup may be required.")
+        print("X4 data setup failed. Manual setup may be required.")
         
     return success
 

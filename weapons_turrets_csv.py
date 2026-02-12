@@ -184,7 +184,7 @@ def generate_weapons_turrets_csv():
                     })
                 
             except Exception as e:
-                print(f"⚠️ Error processing {macro_file.name}: {e}")
+                print(f"Error processing {macro_file.name}: {e}")
                 continue
     
     # Save weapons and turrets CSVs
@@ -193,18 +193,18 @@ def generate_weapons_turrets_csv():
         weapons_df = weapons_df.sort_values(['faction', 'size_class', 'weapon_type', 'mk_level'])
         weapons_csv = csv_dir / "weapons.csv"
         weapons_df.to_csv(weapons_csv, index=False)
-        print(f"✅ Saved {len(weapons_df)} weapons to {weapons_csv}")
+        print(f"Saved {len(weapons_df)} weapons to {weapons_csv}")
     
     if turrets_data:
         turrets_df = pd.DataFrame(turrets_data)
         turrets_df = turrets_df.sort_values(['faction', 'size_class', 'turret_type', 'mk_level'])
         turrets_csv = csv_dir / "turrets.csv"
         turrets_df.to_csv(turrets_csv, index=False)
-        print(f"✅ Saved {len(turrets_df)} turrets to {turrets_csv}")
+        print(f"Saved {len(turrets_df)} turrets to {turrets_csv}")
     
     return len(weapons_data), len(turrets_data)
 
 if __name__ == "__main__":
-    print("🚀 Generating Weapons and Turrets CSV files...")
+    print("Generating Weapons and Turrets CSV files...")
     weapons_count, turrets_count = generate_weapons_turrets_csv()
-    print(f"📊 Summary: {weapons_count} weapons, {turrets_count} turrets")
+    print(f"Summary: {weapons_count} weapons, {turrets_count} turrets")
