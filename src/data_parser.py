@@ -2,20 +2,25 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 import pandas as pd
 from typing import Optional
+import re
+try:
+    from .app_paths import get_csv_cache_dir, get_data_search_paths
+except ImportError:
+    from app_paths import get_csv_cache_dir, get_data_search_paths
 try:
     from .language_detector import language_detector
 except ImportError:
     from language_detector import language_detector
 
-# Data directory search paths - check both main and build_scripts locations
-DATA_PATHS = [
-    Path("data"),
-    Path("build_scripts/data")
-]
+DATA_PATHS = get_data_search_paths()
+
+
+def _get_data_paths():
+    return get_data_search_paths()
 
 def find_data_path(relative_path):
     """Find the first existing data path for a given relative path."""
-    for base_path in DATA_PATHS:
+    for base_path in _get_data_paths():
         full_path = base_path / relative_path
         if full_path.exists():
             return full_path
@@ -24,7 +29,7 @@ def find_data_path(relative_path):
 def get_all_data_paths(relative_path):
     """Get all existing data paths for a given relative path."""
     paths = []
-    for base_path in DATA_PATHS:
+    for base_path in _get_data_paths():
         full_path = base_path / relative_path
         if full_path.exists():
             paths.append(full_path)
@@ -282,6 +287,68 @@ def parse_storage_macro(storage_file: Path):
     
     return 0, None
 
+
+ALLOWED_XENON_CODES = {"f", "b", "h", "pe", "se"}
+
+
+def _extract_xenon_code(row: pd.Series) -> str:
+    """Extract Xenon short code (e.g., F, B, H, PE, SE) from ship row."""
+    display_name = str(row.get("display_name", "") or "").strip()
+    name = str(row.get("name", "") or "").strip()
+    macro_name = str(row.get("macro_name", "") or "").strip().lower()
+
+    for candidate in (display_name, name):
+        if not candidate:
+            continue
+        match = re.match(r"^([A-Za-z]{1,2})", candidate)
+        if match:
+            return match.group(1).lower()
+
+    macro_to_code = {
+        "heavyfighter_01": "f",
+        "corvette_01": "b",
+        "terraformer_01": "h",
+        "corvette_02": "pe",
+        "miner_solid_01": "se",
+    }
+    for token, code in macro_to_code.items():
+        if token in macro_name:
+            return code
+
+    return ""
+
+
+def apply_ship_inclusion_rules(ships_df: pd.DataFrame) -> pd.DataFrame:
+    """Apply global ship inclusion rules for runtime and CSV data.
+
+    Rules:
+    - Exclude all Khaak ships
+    - Include Xenon only if code is one of F, B, H, PE, SE
+    """
+    if ships_df.empty:
+        return ships_df
+
+    maker_race = ships_df.get("maker_race", pd.Series("", index=ships_df.index)).astype(str).str.lower()
+    macro_name = ships_df.get("macro_name", pd.Series("", index=ships_df.index)).astype(str).str.lower()
+
+    khaak_mask = maker_race.str.contains("khaak", na=False) | macro_name.str.contains("ship_kha", na=False)
+    xenon_mask = maker_race.str.contains("xenon", na=False) | macro_name.str.contains("ship_xen", na=False)
+
+    keep_mask = ~khaak_mask & ~xenon_mask
+
+    xenon_rows = ships_df[xenon_mask]
+    if not xenon_rows.empty:
+        xenon_codes = xenon_rows.apply(_extract_xenon_code, axis=1)
+        allowed_xenon_idx = xenon_rows.index[xenon_codes.isin(ALLOWED_XENON_CODES)]
+        keep_mask.loc[allowed_xenon_idx] = True
+
+    filtered_df = ships_df[keep_mask].copy()
+    removed_count = len(ships_df) - len(filtered_df)
+    if removed_count > 0:
+        print(f"Ship inclusion rules removed {removed_count} ships (Khaak and disallowed Xenon variants)")
+
+    return filtered_df
+
 def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
     ships = []
 
@@ -499,6 +566,8 @@ def load_ship_data(engines_df: pd.DataFrame) -> pd.DataFrame:
     ships_df = pd.DataFrame(ships)
 
     print(f"Loaded {len(ships_df)} ships from {UNITS_DIR}")
+
+    ships_df = apply_ship_inclusion_rules(ships_df)
 
     # Optionally merge with engines if we have a matching ref (rare)
     if not ships_df.empty and not engines_df.empty:
@@ -744,7 +813,7 @@ def parse_shields():
 def load_weapons_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     """Load weapons data from CSV file for fast access."""
     if csv_path is None:
-        csv_path = Path("data/csv_cache/weapons.csv")
+        csv_path = find_data_path("csv_cache/weapons.csv") or (get_csv_cache_dir() / "weapons.csv")
     
     if not csv_path.exists():
         print(f"Weapons CSV not found at {csv_path}")
@@ -762,7 +831,7 @@ def load_weapons_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
 def load_turrets_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     """Load turrets data from CSV file for fast access."""
     if csv_path is None:
-        csv_path = Path("data/csv_cache/turrets.csv")
+        csv_path = find_data_path("csv_cache/turrets.csv") or (get_csv_cache_dir() / "turrets.csv")
     
     if not csv_path.exists():
         print(f"Turrets CSV not found at {csv_path}")
@@ -780,7 +849,7 @@ def load_turrets_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
 def load_ships_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     """Load ships data from CSV file for fast access."""
     if csv_path is None:
-        csv_path = Path("data/csv_cache/ships.csv")
+        csv_path = find_data_path("csv_cache/ships.csv") or (get_csv_cache_dir() / "ships.csv")
     
     if not csv_path.exists():
         print(f"Ships CSV not found at {csv_path}")
@@ -789,6 +858,7 @@ def load_ships_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     try:
         df = pd.read_csv(csv_path)
         print(f"Loaded {len(df)} ships from CSV")
+        df = apply_ship_inclusion_rules(df)
         return df
     except Exception as e:
         print(f"Error loading ships CSV: {e}")
@@ -798,7 +868,7 @@ def load_ships_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
 def load_engines_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     """Load engines data from CSV file for fast access."""
     if csv_path is None:
-        csv_path = Path("data/csv_cache/engines.csv")
+        csv_path = find_data_path("csv_cache/engines.csv") or (get_csv_cache_dir() / "engines.csv")
     
     if not csv_path.exists():
         print(f"Engines CSV not found at {csv_path}")
@@ -816,7 +886,7 @@ def load_engines_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
 def load_shields_from_csv(csv_path: Optional[Path] = None) -> pd.DataFrame:
     """Load shields data from CSV file for fast access."""
     if csv_path is None:
-        csv_path = Path("data/csv_cache/shields.csv")
+        csv_path = find_data_path("csv_cache/shields.csv") or (get_csv_cache_dir() / "shields.csv")
     
     if not csv_path.exists():
         print(f"Shields CSV not found at {csv_path}")
@@ -835,27 +905,26 @@ def check_csv_freshness():
     """Check if CSV files exist and are up to date with XML files.
     Returns: (bool: csvs_exist, bool: csvs_fresh, str: message)
     """
-    csv_dir = Path("data/csv_cache")
     csv_files = ["ships.csv", "engines.csv", "shields.csv", "weapons.csv", "turrets.csv"]
-    
-    # Check if all CSV files exist
+
+    csv_paths = {}
     missing_files = []
     for csv_file in csv_files:
-        csv_path = csv_dir / csv_file
-        if not csv_path.exists():
+        csv_path = find_data_path(f"csv_cache/{csv_file}")
+        if csv_path is None:
             missing_files.append(csv_file)
+        else:
+            csv_paths[csv_file] = csv_path
     
     if missing_files:
         return False, False, f"Missing CSV files: {', '.join(missing_files)}"
     
     # Find oldest CSV file timestamp
     oldest_csv_time = None
-    for csv_file in csv_files:
-        csv_path = csv_dir / csv_file
-        if csv_path.exists():
-            mtime = csv_path.stat().st_mtime
-            if oldest_csv_time is None or mtime < oldest_csv_time:
-                oldest_csv_time = mtime
+    for csv_path in csv_paths.values():
+        mtime = csv_path.stat().st_mtime
+        if oldest_csv_time is None or mtime < oldest_csv_time:
+            oldest_csv_time = mtime
     
     # Check if any XML files are newer than CSVs
     xml_paths = [
@@ -873,6 +942,9 @@ def check_csv_freshness():
                     mtime = xml_file.stat().st_mtime
                     if newest_xml_time is None or mtime > newest_xml_time:
                         newest_xml_time = mtime
+
+    if newest_xml_time is None:
+        return True, True, "CSV files available (running in CSV-only mode)"
     
     if newest_xml_time and oldest_csv_time and newest_xml_time > oldest_csv_time:
         return True, False, "CSV files are outdated (XML files have been modified)"
@@ -888,8 +960,8 @@ def generate_all_csv_files():
     load_text_mappings()
     
     # Create CSV output directory
-    csv_dir = Path("data/csv_cache")
-    csv_dir.mkdir(exist_ok=True)
+    csv_dir = get_csv_cache_dir()
+    csv_dir.mkdir(parents=True, exist_ok=True)
     
     # Generate ships CSV
     print("Generating ships.csv...")

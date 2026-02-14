@@ -6,7 +6,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🚀 Major Features Added
+##  Major Features Added
 
 ### 1. Multi-Language Support System (NEW in v0.1.1)
 **Comprehensive Language Detection:**
@@ -62,7 +62,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🔧 Technical Improvements
+##  Technical Improvements
 
 ### Data Parser Enhancements (app/data_parser.py)
 **Purpose Extraction:**
@@ -109,7 +109,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 📦 Build System Improvements
+##  Build System Improvements
 
 ### Executable Configuration
 **PyInstaller Spec Updates:**
@@ -134,7 +134,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 📊 Data Quality Improvements
+##  Data Quality Improvements
 
 ### Ship Dataset Refinement
 **Before Filtering**: 225 total ships
@@ -159,7 +159,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🔄 Update System Workflow (v0.1.1 Redesign)
+##  Update System Workflow (v0.1.1 Redesign)
 
 ### Manual Update Process (New Model)
 1. **Menu Access**: Help → Check for Updates... launches X4_Updater.exe
@@ -177,7 +177,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🏗️ Development Workflow
+##  Development Workflow
 
 ### Git Repository Status
 **Modified Files**: 6 core files with functionality improvements
@@ -193,7 +193,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🎯 User Experience Improvements
+##  User Experience Improvements
 
 ### Interface Enhancements
 **Cleaner Ship Selection:**
@@ -226,7 +226,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 🔮 Future Considerations
+##  Future Considerations
 
 ### Update System Extensions
 - **Auto-Download**: Optional automatic update downloading
@@ -248,7 +248,7 @@ This summary documents the comprehensive evolution of the X4 ShipMatrix project 
 
 ---
 
-## 📋 Technical Specifications
+##  Technical Specifications
 
 ### System Requirements (v0.1.1)
 **Runtime**: Windows 10/11 64-bit
@@ -286,7 +286,7 @@ X4_Ship_Parse/
 
 ---
 
-## 🎉 Success Metrics
+##  Success Metrics
 
 ### Quality Improvements
 - **Data Accuracy**: 100% of remaining ships are pilotable vessels

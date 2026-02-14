@@ -95,7 +95,7 @@ def main():
             if found_files:
                 print("   Available language files:")
                 for lang_id, lang_name, lang_file in found_files:
-                    print(f"     ✓ {lang_name}: {lang_file}")
+                    print(f"      {lang_name}: {lang_file}")
             else:
                 print("   No language files found in data/t/")
         else:

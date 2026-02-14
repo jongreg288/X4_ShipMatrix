@@ -1,13 +1,36 @@
 # Creating GitHub Release for X4 ShipMatrix v1.0.0
 
-## 📋 Prerequisites
+Canonical workflow reference: `docs/BUILD_RELEASE_WORKFLOW.md`
+
+##  Prerequisites
 
 1. **GitHub Repository**: Make sure `jongreg288/X4_Ship_Parse` exists on GitHub
 2. **Git Setup**: Repository is connected to GitHub remote
 3. **Release Files**: Both executables built and ready for distribution
 4. **Version Consistency**: All version numbers updated to v1.0.0
 
-## 🚀 Steps to Create Release
+##  Steps to Create Release
+
+### One-command prerelease automation (recommended for 0.x)
+
+From the project root:
+
+```powershell
+python build_scripts/release_prerelease.py
+```
+
+What it does:
+- Builds `X4 ShipMatrix.exe` and `X4_Updater.exe`
+- Builds installer `X4_ShipMatrix_v<version>_Setup.exe`
+- Stages assets in `releases/latest`
+- Creates or updates GitHub prerelease `v<version>`
+
+Optional:
+
+```powershell
+python build_scripts/release_prerelease.py --skip-build
+python build_scripts/release_prerelease.py --notes-file release_notes.md
+```
 
 ### Method 1: GitHub Web Interface (Recommended)
 
@@ -24,21 +47,21 @@
    ```
 
 3. **Upload Assets**:
-   - **Required**: `X4_Ship_Parser.exe` (64.6 MB)
-   - **Optional**: `X4_Updater.exe` (14.4 MB)  
-   - **Optional**: `XRCatTool.exe` and `XRCatToolGUI.exe`
+   - **Required**: `X4 ShipMatrix.exe`
+   - **Required**: `X4_ShipMatrix_v<version>_Setup.exe`
+   - **Optional**: `X4_Updater.exe`
 
 4. **Release Notes**:
    ```markdown
-   # X4 ShipMatrix v1.0.0 - Multi-Language Revolution! 🌍
+   # X4 ShipMatrix v1.0.0 - Multi-Language Revolution! 
 
-   ## 🎉 Major Features
+   ##  Major Features
    - **Multi-Language Support**: Automatic detection of 14+ languages
    - **Windowed GUI**: Clean interface without console window
    - **Smart Data Extraction**: Direct CAT/DAT reading with XRCatTool
    - **Dual Update System**: Choose automatic or manual updates
 
-   ## 📦 Download Options
+   ##  Download Options
    
    ### Full Package (Recommended) - 79 MB
    - `X4_Ship_Parser.exe` - Main application  
@@ -47,11 +70,11 @@
    ### Standalone Package - 64.6 MB
    - `X4_Ship_Parser.exe` - Main application only (manual updates)
 
-   ## 🌍 Supported Languages
+   ##  Supported Languages
    English, German, French, Spanish, Italian, Russian, Polish, Czech, Turkish, 
    Japanese, Korean, Chinese (Simplified), Chinese (Traditional)
 
-   ## 🚀 Quick Start
+   ##  Quick Start
    1. Download your preferred package
    2. Run X4_Ship_Parser.exe
    3. Application auto-detects X4 installation and language
@@ -79,23 +102,22 @@ git push origin v1.0.0
 # Then go to GitHub web interface to upload files
 ```
 
-## 📁 Files to Include in Release
+##  Files to Include in Release
 
 ### Essential Files
-- `X4_Ship_Parser.exe` (64.6 MB) - Main application
+- `X4 ShipMatrix.exe` - Main application
+- `X4_ShipMatrix_v<version>_Setup.exe` - Installer package
 - `README_USERS.txt` - User instructions
-- `Readme.txt` - Quick start guide
 
 ### Optional Files  
-- `X4_Updater.exe` (14.4 MB) - Automatic updater
-- `XRCatTool.exe` + `XRCatToolGUI.exe` - Manual extraction tools
+- `X4_Updater.exe` - Automatic updater
 
 ### Do NOT Include
 - Development files (`development/` folder)
 - Source code (keep repository for that)
 - Build artifacts
 
-## 🔧 Post-Release Setup
+##  Post-Release Setup
 
 1. **Test Update System**:
    ```bash
@@ -117,7 +139,7 @@ git push origin v1.0.0
    Update version numbers for next release
    ```
 
-## 🎯 Release API Endpoint
+##  Release API Endpoint
 
 Once created, your release will be available at:
 ```
@@ -130,7 +152,7 @@ This endpoint will return JSON with:
 - Version numbers
 - Release notes
 
-## ✅ Verification
+##  Verification
 
 After creating the release:
 
@@ -149,4 +171,4 @@ After creating the release:
 
 ---
 
-**The GitHub releases API endpoint will automatically exist once you create your first release through any of the methods above!** 🚀
+**The GitHub releases API endpoint will automatically exist once you create your first release through any of the methods above!** 

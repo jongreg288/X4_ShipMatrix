@@ -13,11 +13,13 @@ import re
 from typing import Dict, List, Tuple, Optional
 try:
     from .data_parser import get_all_data_paths, TEXT_MAPPINGS, load_text_mappings
+    from .app_paths import get_csv_cache_dir
 except ImportError:
     # Handle case when run as standalone script
     import sys
     sys.path.append('.')
     from src.data_parser import get_all_data_paths, TEXT_MAPPINGS, load_text_mappings
+    from src.app_paths import get_csv_cache_dir
 
 class WeaponCSVGenerator:
     def __init__(self):
@@ -363,8 +365,8 @@ def generate_all_csvs():
     load_text_mappings()
     
     # Create output directory for CSV files
-    csv_output_dir = Path("data/csv_cache")
-    csv_output_dir.mkdir(exist_ok=True)
+    csv_output_dir = get_csv_cache_dir()
+    csv_output_dir.mkdir(parents=True, exist_ok=True)
     
     # Generate weapons and turrets CSV
     generator = WeaponCSVGenerator()

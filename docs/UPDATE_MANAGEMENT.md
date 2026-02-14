@@ -4,7 +4,7 @@
 
 The X4 ShipMatrix v1.0.0 provides **flexible update management** with a dual executable architecture designed to address network connectivity issues while providing reliable update functionality.
 
-## 📦 Distribution Options
+##  Distribution Options
 
 ### Option 1: Full Package (Recommended)
 **Files to distribute:**
@@ -12,22 +12,22 @@ The X4 ShipMatrix v1.0.0 provides **flexible update management** with a dual exe
 - `X4_Updater.exe` (14.4 MB) - Automatic update checker
 
 **Benefits:**
-- ✅ Automatic update detection
-- ✅ One-click update downloads
-- ✅ Background update checking
-- ✅ No manual GitHub checking needed
+-  Automatic update detection
+-  One-click update downloads
+-  Background update checking
+-  No manual GitHub checking needed
 
 ### Option 2: Standalone Package  
 **Files to distribute:**
 - `X4_Ship_Parser.exe` (64.6 MB) - Main application only
 
 **Benefits:**
-- ✅ Smaller download size
-- ✅ No network dependencies in main app
-- ✅ More secure (no automatic network requests)
-- ✅ Manual update control
+-  Smaller download size
+-  No network dependencies in main app
+-  More secure (no automatic network requests)
+-  Manual update control
 
-## 🔄 Update Methods
+##  Update Methods
 
 ### Update System (With X4_Updater.exe)
 1. **Manual Check**: Help → Check for Updates launches X4_Updater.exe
@@ -45,7 +45,7 @@ The X4 ShipMatrix v1.0.0 provides **flexible update management** with a dual exe
    - Downloads latest release package
    - Replaces old executables manually
 
-## 🛠️ Technical Details
+##  Technical Details
 
 ### Main Executable (X4_Ship_Parser.exe)
 - **Size**: 64.6 MB
@@ -61,7 +61,7 @@ The X4 ShipMatrix v1.0.0 provides **flexible update management** with a dual exe
 - **Security**: Validates downloads, creates backups
 - **UI**: Simple Tkinter dialogs
 
-## 🎯 Recommendations
+##  Recommendations
 
 ### For Most Users
 **Distribute both executables** for the best user experience:
@@ -82,7 +82,7 @@ python build_both.py    # Creates both executables
 python build_exe.py     # Creates main executable only
 ```
 
-## 🔧 Configuration
+##  Configuration
 
 ### Disable Automatic Update Checks
 To completely disable update checking in the main executable:
@@ -103,7 +103,7 @@ Update `standalone_updater.py` to:
 - Add version validation
 - Customize UI messages
 
-## 📊 Comparison
+##  Comparison
 
 | Feature | With Updater | Without Updater |
 |---------|-------------|-----------------|
@@ -114,16 +114,16 @@ Update `standalone_updater.py` to:
 | **User Experience** | Excellent | Good |
 | **Corporate Friendly** | Medium | Excellent |
 
-## 🚀 Implementation Status
+##  Implementation Status
 
-✅ **Completed:**
+ **Completed:**
 - Main executable with network dependencies removed
 - Standalone updater with full GitHub integration
 - Dual build system for both options
 - Manual update fallback in main app
 - Documentation and deployment guides
 
-✅ **Benefits Achieved:**
+ **Benefits Achieved:**
 - Smaller main executable (64.6 MB vs previous versions)
 - No network issues in main application
 - Optional automatic updates for users who want them
@@ -132,4 +132,4 @@ Update `standalone_updater.py` to:
 
 ---
 
-**The update management issue is now resolved with flexible options for all user types!** 🎉
+**The update management issue is now resolved with flexible options for all user types!** 

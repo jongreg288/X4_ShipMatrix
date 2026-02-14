@@ -115,10 +115,10 @@ def main():
             print("\nUpdate Options:")
             print("   • Distribute both executables for automatic update checking")
             print("   • Distribute only 'X4 ShipMatrix.exe' for manual updates")
-            print("   • Users can check updates via Help → Check for Updates")
+            print("   • Users can check updates via Help -> Check for Updates")
         else:
             print("\nUpdate Method:")
-            print("   • Manual updates only (Help → Check for Updates opens GitHub)")
+            print("   • Manual updates only (Help -> Check for Updates opens GitHub)")
             print("   • Users download new versions from GitHub releases")
         
         return 0

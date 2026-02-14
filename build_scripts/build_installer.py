@@ -8,15 +8,23 @@ import subprocess
 import sys
 from pathlib import Path
 import os
+import shutil
 
 def find_inno_setup():
     """Find the Inno Setup compiler (ISCC.exe)."""
+    # First try PATH
+    iscc_from_path = shutil.which("ISCC.exe") or shutil.which("iscc")
+    if iscc_from_path:
+        return iscc_from_path
+
     # Common installation paths
     possible_paths = [
         r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
         r"C:\Program Files\Inno Setup 6\ISCC.exe",
         r"C:\Program Files (x86)\Inno Setup 5\ISCC.exe",
         r"C:\Program Files\Inno Setup 5\ISCC.exe",
+        str(Path.home() / "AppData" / "Local" / "Programs" / "Inno Setup 6" / "ISCC.exe"),
+        str(Path.home() / "AppData" / "Local" / "Programs" / "Inno Setup 5" / "ISCC.exe"),
     ]
     
     for path in possible_paths:
@@ -63,7 +71,8 @@ def main():
             [iscc_path, str(iss_script)],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
+            cwd=build_scripts_dir
         )
         
         print(result.stdout)

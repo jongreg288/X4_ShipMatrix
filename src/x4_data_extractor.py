@@ -17,6 +17,7 @@ import zipfile
 import subprocess
 import json
 from .language_detector import language_detector
+from .app_paths import get_app_dir, get_data_dir
 
 def safe_print(message):
     """Print that works in both console and executable mode."""
@@ -40,7 +41,7 @@ class X4DataExtractor:
     
     def __init__(self):
         self.x4_install_path: Optional[Path] = None
-        self.data_dir = Path("data")
+        self.data_dir = get_data_dir()
         
     def _find_development_data(self) -> Optional[Path]:
         """Find data directory from development folder when running as executable."""
@@ -164,18 +165,14 @@ class X4DataExtractor:
         """Find the bundled XRCatTool.exe that ships with our application."""
         
         # Get the current executable/script directory
-        if hasattr(sys, '_MEIPASS'):
-            # Running as PyInstaller executable - XRCatTool should be in same dir as exe
-            app_dir = Path(sys.executable).parent
-        else:
-            # Running as script - look relative to this file
-            app_dir = Path(__file__).parent.parent
+        app_dir = get_app_dir()
         
         # Possible locations for XRCatTool.exe
         possible_paths = [
             app_dir / "XRCatTool.exe",                    # Same directory as exe
             app_dir / "tools" / "XRCatTool.exe",          # tools subdirectory
             app_dir.parent / "distro" / "XRCatTool.exe",  # ../distro/ (when running from development)
+            Path.cwd() / "XRCatTool.exe",                 # current working directory
         ]
         
         for tool_path in possible_paths:

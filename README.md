@@ -2,18 +2,18 @@
 
 A comprehensive Python application for parsing and analyzing X4: Foundations ship data with **multi-language support** and **intelligent data extraction**.
 
-## 🌟 Key Features
+##  Key Features
 
-- **🌍 Multi-Language Support**: Automatic detection of 14+ languages (English, German, French, Spanish, Italian, Russian, Polish, Czech, Turkish, Japanese, Korean, Chinese)
-- **⚡ Smart Data Extraction**: Direct CAT/DAT file reading with XRCatTool integration
-- **🎨 Clean GUI Interface**: Windowed application without console windows
-- **📊 Advanced Ship Analysis**: Calculate travel speeds, compare ships and engines
+- ** Multi-Language Support**: Automatic detection of 14+ languages (English, German, French, Spanish, Italian, Russian, Polish, Czech, Turkish, Japanese, Korean, Chinese)
+- ** Smart Data Extraction**: Direct CAT/DAT file reading with XRCatTool integration
+- ** Clean GUI Interface**: Windowed application without console windows
+- ** Advanced Ship Analysis**: Calculate travel speeds, compare ships and engines
 - **� Visual Comparisons**: Interactive charts showing cargo/speed rankings for top 5 ships
-- **🔄 Intelligent Filtering**: Cascading dropdowns that auto-filter engines by ship size
-- **�🔄 Flexible Updates**: Automatic or manual update options
-- **🎯 Intelligent Detection**: Auto-finds X4 installation and language preferences
+- ** Intelligent Filtering**: Cascading dropdowns that auto-filter engines by ship size
+- **� Flexible Updates**: Automatic or manual update options
+- ** Intelligent Detection**: Auto-finds X4 installation and language preferences
 
-## 📦 For End Users (Standalone Version)
+##  For End Users (Standalone Version)
 
 ### Quick Start
 1. **Download** from [Releases](https://github.com/jongreg288/X4_Ship_Parse/releases)
@@ -71,7 +71,7 @@ python main.py
 python launcher.py
 ```
 
-## 🎮 Usage
+##  Usage
 
 ### Main Interface
 1. **Launch**: Run `python main.py` or `X4_Ship_Parser.exe`
@@ -103,11 +103,11 @@ travel_speed = (forward_thrust × travel_thrust × engine_connections) / drag_fo
 - `engine_connections`: Ship's engine mount points
 - `drag_forward`: Ship's aerodynamic resistance
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 X4_Ship_Parse/
-├── 📦 Distribution
+├──  Distribution
 │   ├── dist/                     # Built executables & user files
 │   │   ├── X4_Ship_Parser.exe   # Main application (64.6 MB)
 │   │   ├── X4_Updater.exe       # Update checker (14.4 MB)
@@ -115,7 +115,7 @@ X4_Ship_Parse/
 │   │   └── README_USERS.txt     # User instructions
 │   └── releases/                # Release management
 │
-├── 🧩 Source Code  
+├──  Source Code  
 │   ├── main.py                  # Application entry point
 │   ├── standalone_updater.py    # Update checker source
 │   └── src/                     # Core modules
@@ -126,7 +126,7 @@ X4_Ship_Parse/
 │       ├── logic.py            # Physics calculations
 │       └── ...                 # Other source files
 │
-├── 🔧 Build System
+├──  Build System
 │   └── build_scripts/          # Build configuration
 │       ├── build_both.py       # Build both executables  
 │       ├── build_exe.py        # Build main executable
@@ -134,28 +134,35 @@ X4_Ship_Parse/
 │       ├── X4_Updater.spec     # Updater build config
 │       └── version_info.txt    # Windows version metadata
 │
-├── 📚 Documentation
+├──  Documentation
 │   └── docs/                   # All documentation
 │       ├── LANGUAGE_SUPPORT.md # Multi-language guide
 │       ├── UPDATE_MANAGEMENT.md # Update system guide
 │       ├── UPDATE_SUMMARY.md   # Development summary
 │       └── RELEASE_SETUP.md    # GitHub release guide
 │
-├── 🧪 Testing
+├──  Testing
 │   └── tests/                  # Test files
 │       ├── test_final_filtering.py
 │       └── test_language_detection.py
 │
-├── 📊 Game Data (Auto-generated)
+├──  Game Data (Auto-generated)
 │   └── data/                   # X4 extracted data
 │
-└── 📋 Configuration
+└──  Configuration
     ├── README.md               # This file
     ├── requirements.txt        # Python dependencies
     └── .gitignore             # Git ignore rules
 ```
 
-## 🔨 Building Executables
+##  Building Executables
+
+### Recommended (single command)
+```bash
+python build_scripts/release_prerelease.py
+```
+
+This is the canonical workflow for 0.x releases. See `docs/BUILD_RELEASE_WORKFLOW.md`.
 
 ### Single Executable (Main App Only)
 ```bash
@@ -177,7 +184,7 @@ python build_both.py
 - **XRCatTool Integration**: Includes data extraction tools
 - **Optimized Size**: Removes unnecessary network dependencies from main app
 
-## 🛠️ Development
+##  Development
 
 ### Testing & Debugging
 ```bash

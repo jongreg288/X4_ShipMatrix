@@ -54,7 +54,7 @@ Generated cache: 291 ships, 313 engines, 110 shields, 112 weapons, 115 turrets
   
 - **Check Cache Status**:
   - Real-time status check
-  - Color-coded status icons (✓ OK, ⚠ Outdated, ✗ Missing)
+  - Color-coded status icons ( OK,  Outdated,  Missing)
   - Actionable recommendations
 
 ## User Workflows

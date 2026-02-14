@@ -1,12 +1,23 @@
 # Made with the help of Claude, through Github Copilot. A labor borne of my desire to know which ship can carry the most and go the fastest.
 # You can reach me through GitHub @jongreg288
-from src.data_parser import load_ship_data, load_engine_data, parse_shields, load_weapons_from_csv, load_turrets_from_csv
+from src.data_parser import (
+    load_ship_data,
+    load_engine_data,
+    parse_shields,
+    load_weapons_from_csv,
+    load_turrets_from_csv,
+    load_ships_from_csv,
+    load_engines_from_csv,
+    load_shields_from_csv,
+    check_csv_freshness,
+    generate_all_csv_files,
+)
 from src.gui import ShipStatsApp
 from src.x4_data_extractor import setup_x4_data
 from src.loading_dialog import show_loading_dialog, update_loading_status, close_loading_dialog
+from src.app_paths import has_xml_data
 from PyQt6.QtWidgets import QApplication, QMessageBox
 import sys
-from pathlib import Path
 
 def safe_print(message):
     """Print that works in both console and executable mode."""
@@ -38,9 +49,11 @@ def main():
     disclaimer.setStandardButtons(QMessageBox.StandardButton.Ok)
     disclaimer.exec()
     
-    # Check if data directory exists, if not try to set it up
-    data_dir = Path("data")
-    if not data_dir.exists() or not list(data_dir.glob("**/*.xml")):
+    # Prefer CSV-only mode for end-user builds (smaller footprint, faster startup)
+    csvs_exist, csvs_fresh, status_msg = check_csv_freshness()
+
+    # If CSV cache is missing, try XML setup as a fallback path
+    if not csvs_exist:
         # Show loading dialog for windowed mode
         loading_dialog = show_loading_dialog()
         update_loading_status("X4 data not found. Locating X4 installation...")
@@ -61,15 +74,13 @@ def main():
                                   "Please ensure X4: Foundations is installed and try again.\n"
                                   "Manual setup instructions are available in the README.")
             
-            # Still try to continue in case user has partial data
+            # Continue: app may still run if CSV files are bundled
+    else:
+        safe_print(f"CSV Cache Status: {status_msg}")
     
-    # Check CSV cache status and regenerate if needed
+    # If XML data exists and CSV cache is stale, regenerate CSV cache
     try:
-        from src.data_parser import check_csv_freshness, generate_all_csv_files
-        
-        csvs_exist, csvs_fresh, status_msg = check_csv_freshness()
-        
-        if not csvs_exist or not csvs_fresh:
+        if has_xml_data() and (not csvs_exist or not csvs_fresh):
             update_loading_status("Generating optimized data cache (first run or after update)...")
             safe_print(f"\nCSV Cache Status: {status_msg}")
             safe_print("Generating CSV data cache for faster loading...")
@@ -90,10 +101,14 @@ def main():
     
     # Update loading status
     update_loading_status("Loading engine data...")
-    engines_df = load_engine_data()  # load engines first from all data locations
+    engines_df = load_engines_from_csv()
+    if engines_df.empty:
+        engines_df = load_engine_data()
     
     update_loading_status("Loading ship data...")
-    ships_df = load_ship_data(engines_df=engines_df)  #pass it in
+    ships_df = load_ships_from_csv()
+    if ships_df.empty:
+        ships_df = load_ship_data(engines_df=engines_df)
 
     if ships_df.empty:
         close_loading_dialog()
@@ -108,7 +123,9 @@ def main():
         return
 
     update_loading_status("Loading shield data...")
-    shields_df = parse_shields()
+    shields_df = load_shields_from_csv()
+    if shields_df.empty:
+        shields_df = parse_shields()
 
     update_loading_status("Loading weapons data...")
     weapons_df = load_weapons_from_csv()

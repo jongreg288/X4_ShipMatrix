@@ -49,7 +49,7 @@ data/
 - **CSV Method**: Direct DataFrame creation
 - **Memory Reduction**: 50-80% less RAM usage
 
-## 🔧 Integration Instructions
+##  Integration Instructions
 
 ### 1. Update data_parser.py
 ```python
@@ -99,7 +99,7 @@ datas = [
 ## Update Workflow
 
 ### When X4 Game Updates:
-**Now Automatic!** ✅
+**Now Automatic!** 
 - Application auto-detects when XML files are newer than CSVs
 - Auto-regenerates cache on next startup
 - Manual option: Tools → Rebuild Data Cache in the GUI
@@ -109,14 +109,14 @@ datas = [
 - **Track Changes**: Easy to see data differences in Git
 - **Distribution**: Ready-to-use data files packaged in executable
 
-## ✅ Implementation Complete!
+##  Implementation Complete!
 
 ### What's Been Implemented:
-1. ✅ **CSV files included in .exe build** - Users get instant startup
-2. ✅ **Auto-generation on first run** - Missing CSVs regenerate automatically
-3. ✅ **Smart freshness detection** - Detects outdated CSVs and rebuilds
-4. ✅ **GUI Tools Menu** - Manual rebuild and status check options
-5. ✅ **User-friendly dialogs** - Clear status and progress feedback
+1.  **CSV files included in .exe build** - Users get instant startup
+2.  **Auto-generation on first run** - Missing CSVs regenerate automatically
+3.  **Smart freshness detection** - Detects outdated CSVs and rebuilds
+4.  **GUI Tools Menu** - Manual rebuild and status check options
+5.  **User-friendly dialogs** - Clear status and progress feedback
 
 ### User Experience:
 - **Fresh Install**: Instant startup with packaged CSVs (0.5s)
@@ -126,13 +126,13 @@ datas = [
 
 ## Benefits Summary
 
-- ✅ **Instant Loading**: 100x faster than XML parsing
-- ✅ **Automatic Updates**: Detects DLC/game updates automatically
-- ✅ **Smaller Package**: 0.2MB vs several GB of XML data
-- ✅ **Better UX**: App starts in seconds, not minutes
-- ✅ **Easy Maintenance**: One-click rebuild from GUI
-- ✅ **Version Control Friendly**: Track data changes easily
-- ✅ **Cross-Platform Compatible**: CSV files work on all platforms
+-  **Instant Loading**: 100x faster than XML parsing
+-  **Automatic Updates**: Detects DLC/game updates automatically
+-  **Smaller Package**: 0.2MB vs several GB of XML data
+-  **Better UX**: App starts in seconds, not minutes
+-  **Easy Maintenance**: One-click rebuild from GUI
+-  **Version Control Friendly**: Track data changes easily
+-  **Cross-Platform Compatible**: CSV files work on all platforms
 
 ## For Developers
 

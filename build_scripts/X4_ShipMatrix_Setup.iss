@@ -27,7 +27,6 @@ LicenseFile=..\LICENSE
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\releases\latest
 OutputBaseFilename=X4_ShipMatrix_v{#MyAppVersion}_Setup
-SetupIconFile=dist\X4 ShipMatrix.exe,0
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -69,6 +68,7 @@ begin
   InfoPage := CreateOutputMsgMemoPage(wpWelcome,
     'Welcome to X4 ShipMatrix Setup',
     'Ship Analysis Tool for X4: Foundations',
+    '',
     'X4 ShipMatrix is a comprehensive tool for analyzing and comparing ships in X4: Foundations.' + #13#10 + #13#10 +
     'Key Features:' + #13#10 +
     '• Multi-language support (14+ languages)' + #13#10 +
